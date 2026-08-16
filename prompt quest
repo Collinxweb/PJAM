@@ -1,0 +1,605 @@
+import { useState } from "react";
+
+const THEMES = {
+  meadow: {
+    label: "Meadow",
+    emoji: "🌤️",
+    bgFrom: "#bfe6f8",
+    bgTo: "#eaf7ff",
+    card: "#ffffff",
+    ink: "#1b3a4b",
+    accent: "#ffc72c",
+    accentInk: "#5c4300",
+    accent2: "#4fb8a0",
+    mascotBody: "#ffd873",
+    mascotCheek: "#ff9d6c",
+    ground: "#8fd6a8",
+  },
+  snow: {
+    label: "Snow Mountain",
+    emoji: "🏔️",
+    bgFrom: "#dce9f4",
+    bgTo: "#f4fbff",
+    card: "#ffffff",
+    ink: "#1f2f45",
+    accent: "#5fc9e8",
+    accentInk: "#0b3a4d",
+    accent2: "#a78bfa",
+    mascotBody: "#eaf6ff",
+    mascotCheek: "#8fd6ff",
+    ground: "#c9e4f2",
+  },
+  desert: {
+    label: "Desert",
+    emoji: "🏜️",
+    bgFrom: "#f6d9a3",
+    bgTo: "#fdf0d9",
+    card: "#fffaf0",
+    ink: "#5a3416",
+    accent: "#ff6b45",
+    accentInk: "#4a1c08",
+    accent2: "#e8a33d",
+    mascotBody: "#ffcf87",
+    mascotCheek: "#ff8a5c",
+    ground: "#e3b871",
+  },
+  arena: {
+    label: "Arena",
+    emoji: "🕹️",
+    bgFrom: "#0c0a12",
+    bgTo: "#1a1224",
+    card: "#160f20",
+    ink: "#efe9ff",
+    accent: "#a259ff",
+    accentInk: "#1a0630",
+    accent2: "#c9c9d6",
+    mascotBody: "#1c1526",
+    mascotCheek: "#a259ff",
+    ground: "#2a1f3a",
+    dark: true,
+  },
+};
+
+const ZONES = [
+  {
+    emoji: "🌱",
+    name: "Instruction Basics",
+    skill: "reasoning",
+    tag: "12 challenges",
+    desc: "Zero-shot prompting. Score = semantic match to a fixed target output.",
+  },
+  {
+    emoji: "🔥",
+    name: "Few-Shot Arena",
+    skill: "reasoning",
+    tag: "9 challenges",
+    desc: "Example-driven prompting. Teach the AI a pattern from 2–3 samples.",
+  },
+  {
+    emoji: "💎",
+    name: "Constraint Vault",
+    skill: "format",
+    tag: "14 challenges · up to 500 rep",
+    desc: "Hit exact format, length, and tone limits. No overages allowed.",
+  },
+  {
+    emoji: "🎨",
+    name: "Persona & Style Bay",
+    skill: "style",
+    tag: "8 challenges",
+    desc: "Roleplay and tone transfer — write in a specific voice on command.",
+  },
+  {
+    emoji: "🧩",
+    name: "Chain-of-Thought Hollow",
+    skill: "reasoning",
+    tag: "11 challenges",
+    desc: "Multi-step reasoning prompts, judged on logic and final answer.",
+  },
+  {
+    emoji: "⏳",
+    name: "Daily Rush",
+    skill: "speed",
+    tag: "New challenge every 24h",
+    desc: "One shared puzzle a day. First 100 solvers split a rep bonus.",
+  },
+];
+
+const FILTERS = [
+  { key: "all", label: "All" },
+  { key: "reasoning", label: "Reasoning" },
+  { key: "format", label: "Format" },
+  { key: "style", label: "Style" },
+  { key: "speed", label: "Speed" },
+];
+
+const RANK_TIERS = [
+  { name: "Bronze", range: "0 – 999 rep", color: "#b08d57" },
+  { name: "Silver", range: "1,000 – 2,499 rep", color: "#9aa5b1" },
+  { name: "Gold", range: "2,500 – 4,999 rep", color: "#e0b23d" },
+  { name: "Prompt Master", range: "5,000+ rep", color: "#a259ff" },
+];
+
+const UNLOCKS = [
+  { emoji: "📋", name: "Few-shot template library", req: "Unlocks at Silver" },
+  { emoji: "🌡️", name: "Parameter cheat sheet", req: "Unlocks after 5 Constraint Vault clears" },
+  { emoji: "🪜", name: "Chain-of-thought scaffold pack", req: "Unlocks after first Gold-tier win" },
+];
+
+function Mascot({ t, pose = "wave", size = 96 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 120 120" aria-hidden="true">
+      <ellipse cx="60" cy="110" rx="28" ry="5" fill="#000" opacity="0.12" />
+
+      {/* antenna */}
+      <line x1="60" y1="10" x2="60" y2="22" stroke={t.ink} strokeWidth="3" strokeLinecap="round" />
+      <circle cx="60" cy="8" r="5" fill={t.accent} stroke={t.ink} strokeWidth="2.5" />
+
+      {/* head / body shell */}
+      <rect
+        x="24"
+        y="22"
+        width="72"
+        height="62"
+        rx="20"
+        fill={t.mascotBody}
+        stroke={t.ink}
+        strokeWidth="3"
+      />
+
+      {/* screen face */}
+      <rect x="34" y="34" width="52" height="34" rx="10" fill={t.dark ? "#0c0a12" : "#0f1a22"} opacity="0.9" />
+      <circle cx="48" cy="51" r="4.5" fill={t.accent} />
+      <circle cx="72" cy="51" r="4.5" fill={t.accent} />
+      <path
+        d={pose === "wave" ? "M50 60q10 7 20 0" : "M48 60h24"}
+        stroke={t.accent}
+        strokeWidth="2.5"
+        fill="none"
+        strokeLinecap="round"
+      />
+
+      {/* side ear-nodes */}
+      <circle cx="20" cy="52" r="6" fill={t.mascotBody} stroke={t.ink} strokeWidth="2.5" />
+      <circle cx="100" cy="52" r="6" fill={t.mascotBody} stroke={t.ink} strokeWidth="2.5" />
+
+      {/* arm */}
+      <path
+        d={pose === "wave" ? "M92 68q16-4 18 8t-14 12" : "M92 72q14 4 14 14"}
+        stroke={t.ink}
+        strokeWidth="3"
+        fill="none"
+        strokeLinecap="round"
+      />
+      <path d="M28 72q-8 6 -4 14" stroke={t.ink} strokeWidth="3" fill="none" strokeLinecap="round" />
+
+      {/* legs */}
+      <rect x="42" y="84" width="10" height="14" rx="4" fill={t.mascotBody} stroke={t.ink} strokeWidth="2.5" />
+      <rect x="68" y="84" width="10" height="14" rx="4" fill={t.mascotBody} stroke={t.ink} strokeWidth="2.5" />
+    </svg>
+  );
+}
+
+const AI_AGENTS = [
+  { key: "claude", label: "Claude", mono: "C", color: "#D97757", textColor: "#2b1408" },
+  { key: "chatgpt", label: "ChatGPT", mono: "G", color: "#10A37F", textColor: "#ffffff" },
+  { key: "grok", label: "Grok", mono: "X", color: "#1a1a1a", textColor: "#ffffff" },
+  { key: "gemini", label: "Gemini", mono: "G", color: "#4285F4", textColor: "#ffffff" },
+];
+
+function AgentBadge({ a, t }) {
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <div
+        className="w-11 h-11 rounded-2xl flex items-center justify-center font-black text-lg"
+        style={{
+          background: a.color,
+          color: a.textColor,
+          border: `2.5px solid ${t.ink}`,
+          boxShadow: `2px 3px 0 ${t.ink}`,
+        }}
+      >
+        {a.mono}
+      </div>
+      <span className="text-[10px] font-extrabold opacity-75" style={{ color: t.ink }}>
+        {a.label}
+      </span>
+    </div>
+  );
+}
+
+function Pill({ active, onClick, children }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        border: active ? "2.5px solid #1b3a4b" : "2.5px solid transparent",
+        background: active ? "#fff" : "rgba(255,255,255,0.55)",
+      }}
+      className="px-4 py-1.5 rounded-full text-sm font-bold transition-all"
+    >
+      {children}
+    </button>
+  );
+}
+
+function ZoneCard({ z, t, onOpen }) {
+  return (
+    <div
+      onClick={() => onOpen(z)}
+      role="button"
+      tabIndex={0}
+      className="rounded-3xl p-4 flex flex-col gap-1 cursor-pointer select-none active:scale-[0.98] transition-transform"
+      style={{
+        background: t.card,
+        border: `3px solid ${t.ink}`,
+        boxShadow: `4px 5px 0 ${t.ink}`,
+      }}
+    >
+      <div className="text-3xl">{z.emoji}</div>
+      <div className="font-extrabold text-base leading-tight" style={{ color: t.ink }}>
+        {z.name}
+      </div>
+      <span
+        className="self-start text-[11px] font-bold px-2 py-0.5 rounded-full mt-1"
+        style={{ background: t.accent, color: t.accentInk }}
+      >
+        {z.tag}
+      </span>
+      <div className="text-xs mt-1 opacity-70" style={{ color: t.ink }}>
+        {z.desc}
+      </div>
+    </div>
+  );
+}
+
+function HomeScreen({ t, goTo, openZone }) {
+  return (
+    <div className="px-5 pb-10">
+      <div className="flex items-center justify-between pt-2">
+        <div className="flex items-center gap-2">
+          <div
+            className="w-9 h-9 flex items-center justify-center text-sm font-black"
+            style={{
+              background: t.accent,
+              color: t.accentInk,
+              border: `2.5px solid ${t.ink}`,
+              clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
+            }}
+          >
+            P
+          </div>
+          <span
+            className="font-black tracking-tight"
+            style={{ color: t.ink, fontFamily: "'Baloo 2', sans-serif", fontSize: "1.15rem", letterSpacing: "0.03em" }}
+          >
+            PJAM
+          </span>
+        </div>
+        <button
+          onClick={() => goTo("onboarding")}
+          className="text-xs font-extrabold px-3 py-1.5 rounded-full"
+          style={{ border: `2px solid ${t.ink}`, color: t.ink }}
+        >
+          Sign in
+        </button>
+      </div>
+
+      <div className="flex flex-col items-center text-center mt-3">
+        <Mascot t={t} size={104} />
+        <h1
+          className="font-black leading-[1.05] mt-2"
+          style={{ color: t.ink, fontSize: "2.15rem", fontFamily: "'Baloo 2', sans-serif" }}
+        >
+          Craft something.
+          <br />
+          Prompt something.
+        </h1>
+        <p className="mt-3 text-sm max-w-xs opacity-80 font-semibold" style={{ color: t.ink }}>
+          Real prompt challenges, scored on accuracy, efficiency, and style. Pick a zone and start climbing the ranks.
+        </p>
+      </div>
+
+      <div
+        className="mt-6 rounded-3xl p-4"
+        style={{ background: t.card, border: `3px solid ${t.ink}`, boxShadow: `4px 5px 0 ${t.ink}` }}
+      >
+        <div className="text-sm font-extrabold mb-3" style={{ color: t.ink }}>
+          ⚔️ Choose your AI opponent
+        </div>
+        <div className="flex justify-between">
+          {AI_AGENTS.map((a) => (
+            <AgentBadge key={a.key} a={a} t={t} />
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-7">
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="font-extrabold text-lg" style={{ color: t.ink }}>
+            🗺️ Quest Zones
+          </h2>
+          <button
+            onClick={() => goTo("explore")}
+            className="text-xs font-extrabold opacity-70"
+            style={{ color: t.ink }}
+          >
+            See all →
+          </button>
+        </div>
+        <p className="text-xs mb-3 opacity-70 font-semibold" style={{ color: t.ink }}>
+          Six zones, six prompt-engineering skills. Tap one to enter.
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          {ZONES.slice(0, 4).map((z) => (
+            <ZoneCard key={z.name} z={z} t={t} onOpen={openZone} />
+          ))}
+        </div>
+      </div>
+
+      <div
+        className="mt-7 rounded-3xl p-4 flex items-center justify-between cursor-pointer"
+        onClick={() => goTo("rank")}
+        style={{ background: t.card, border: `3px solid ${t.ink}`, boxShadow: `4px 5px 0 ${t.ink}` }}
+      >
+        <div>
+          <div className="text-xs font-bold opacity-60" style={{ color: t.ink }}>
+            YOUR REPUTATION
+          </div>
+          <div className="text-2xl font-black" style={{ color: t.ink }}>
+            1,240 <span className="text-sm font-bold opacity-60">rep</span>
+          </div>
+        </div>
+        <div
+          className="px-3 py-2 rounded-2xl font-extrabold text-sm"
+          style={{ background: RANK_TIERS[1].color, color: "#fff" }}
+        >
+          Silver
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ExploreScreen({ t, openZone }) {
+  const [filter, setFilter] = useState("all");
+  const shown = filter === "all" ? ZONES : ZONES.filter((z) => z.skill === filter);
+  return (
+    <div className="px-5 pb-10 pt-4">
+      <h1 className="font-black text-xl" style={{ color: t.ink, fontFamily: "'Baloo 2', sans-serif" }}>
+        ✨ Explore
+      </h1>
+      <p className="text-xs mt-1 mb-4 opacity-70 font-semibold" style={{ color: t.ink }}>
+        Filter zones by the skill they train.
+      </p>
+      <div className="flex gap-2 flex-wrap mb-4">
+        {FILTERS.map((f) => (
+          <Pill key={f.key} active={filter === f.key} onClick={() => setFilter(f.key)}>
+            {f.label}
+          </Pill>
+        ))}
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        {shown.map((z) => (
+          <ZoneCard key={z.name} z={z} t={t} onOpen={openZone} />
+        ))}
+      </div>
+      {shown.length === 0 && (
+        <p className="text-sm mt-6 opacity-60 font-semibold text-center" style={{ color: t.ink }}>
+          No zones train that skill yet.
+        </p>
+      )}
+    </div>
+  );
+}
+
+function BackpackScreen({ t }) {
+  return (
+    <div className="px-5 pb-10 pt-4">
+      <h1 className="font-black text-xl" style={{ color: t.ink, fontFamily: "'Baloo 2', sans-serif" }}>
+        🎒 Backpack
+      </h1>
+      <p className="text-xs mt-1 mb-4 opacity-70 font-semibold" style={{ color: t.ink }}>
+        Techniques and templates you unlock by clearing challenges.
+      </p>
+      <div className="flex flex-col gap-3">
+        {UNLOCKS.map((u) => (
+          <div
+            key={u.name}
+            className="rounded-2xl p-3 flex items-center gap-3"
+            style={{ background: t.card, border: `2.5px solid ${t.ink}`, opacity: 0.55 }}
+          >
+            <span className="text-2xl">{u.emoji}</span>
+            <div>
+              <div className="font-extrabold text-sm" style={{ color: t.ink }}>
+                {u.name}
+              </div>
+              <div className="text-[11px] font-bold opacity-70" style={{ color: t.ink }}>
+                🔒 {u.req}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="text-xs mt-6 opacity-60 font-semibold text-center" style={{ color: t.ink }}>
+        Nothing unlocked yet — clear your first challenge to start your collection.
+      </p>
+    </div>
+  );
+}
+
+function RankScreen({ t }) {
+  return (
+    <div className="px-5 pb-10 pt-4">
+      <h1 className="font-black text-xl" style={{ color: t.ink, fontFamily: "'Baloo 2', sans-serif" }}>
+        🏅 Rank
+      </h1>
+      <p className="text-xs mt-1 mb-4 opacity-70 font-semibold" style={{ color: t.ink }}>
+        Reputation = average of your best 20 challenge scores, weighted 60% accuracy, 25% efficiency, 15% style.
+        Decays 2% per week of inactivity.
+      </p>
+      <div className="flex flex-col gap-2">
+        {RANK_TIERS.map((tier) => (
+          <div
+            key={tier.name}
+            className="rounded-2xl p-3 flex items-center justify-between"
+            style={{ background: t.card, border: `2.5px solid ${t.ink}` }}
+          >
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full" style={{ background: tier.color }} />
+              <span className="font-extrabold text-sm" style={{ color: t.ink }}>
+                {tier.name}
+              </span>
+            </div>
+            <span className="text-xs font-bold opacity-70" style={{ color: t.ink }}>
+              {tier.range}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div
+        className="mt-5 rounded-3xl p-4 text-center"
+        style={{ background: t.accent, color: t.accentInk, border: `3px solid ${t.ink}` }}
+      >
+        <div className="text-xs font-bold opacity-80">YOUR CURRENT STANDING</div>
+        <div className="text-2xl font-black mt-1">1,240 rep · Silver</div>
+        <div className="text-xs font-bold mt-1 opacity-80">1,260 rep to reach Gold</div>
+      </div>
+    </div>
+  );
+}
+
+function ZoneDetailScreen({ t, zone, back }) {
+  if (!zone) return null;
+  return (
+    <div className="px-5 pb-10 pt-4">
+      <button onClick={back} className="text-xs font-extrabold mb-4" style={{ color: t.ink }}>
+        ← Back
+      </button>
+      <div className="text-4xl">{zone.emoji}</div>
+      <h1 className="font-black text-xl mt-2" style={{ color: t.ink, fontFamily: "'Baloo 2', sans-serif" }}>
+        {zone.name}
+      </h1>
+      <span
+        className="inline-block text-[11px] font-bold px-2 py-0.5 rounded-full mt-2"
+        style={{ background: t.accent, color: t.accentInk }}
+      >
+        {zone.tag}
+      </span>
+      <p className="text-sm mt-3 opacity-80 font-semibold" style={{ color: t.ink }}>
+        {zone.desc}
+      </p>
+      <button
+        className="w-full mt-6 py-3 rounded-2xl font-extrabold text-sm"
+        style={{ background: t.accent, color: t.accentInk, border: `3px solid ${t.ink}` }}
+      >
+        Start next challenge →
+      </button>
+    </div>
+  );
+}
+
+
+function OnboardingScreen({ t }) {
+  const [email, setEmail] = useState("");
+  return (
+    <div className="px-6 pb-10 pt-4 flex flex-col items-center text-center min-h-[560px]">
+      <Mascot t={t} size={112} />
+      <h1
+        className="font-black mt-3 leading-tight"
+        style={{ color: t.ink, fontSize: "1.7rem", fontFamily: "'Baloo 2', sans-serif" }}
+      >
+        Welcome to PJAM.
+        <br /> Every quest starts with a hello.
+      </h1>
+      <p className="text-sm mt-2 opacity-80 font-semibold max-w-[240px]" style={{ color: t.ink }}>
+        Sign in to save your rank, rep, and rewards as you go.
+      </p>
+
+      <div className="w-full max-w-xs mt-8 flex flex-col gap-3">
+        <button
+          className="w-full py-3 rounded-2xl font-extrabold text-sm flex items-center justify-center gap-2"
+          style={{ background: "#000", color: "#fff", border: "3px solid #000" }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+            <path d="M18.9 2H22l-7.6 8.7L23.3 22H16.9l-5-6.5-5.7 6.5H2.9l8.1-9.3L2 2h6.5l4.5 6 5.9-6zm-1.1 18h1.7L7.3 3.9H5.5L17.8 20z" />
+          </svg>
+          Continue with X
+        </button>
+
+        <div className="flex items-center gap-3 my-1">
+          <div className="flex-1 h-[2px]" style={{ background: t.ink, opacity: 0.15 }} />
+          <span className="text-xs font-bold opacity-50" style={{ color: t.ink }}>
+            or
+          </span>
+          <div className="flex-1 h-[2px]" style={{ background: t.ink, opacity: 0.15 }} />
+        </div>
+
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@quest.mail"
+          className="w-full py-3 px-4 rounded-2xl text-sm font-semibold outline-none"
+          style={{ border: `2.5px solid ${t.ink}`, background: t.card, color: t.ink }}
+        />
+        <button
+          className="w-full py-3 rounded-2xl font-extrabold text-sm"
+          style={{ background: t.accent, color: t.accentInk, border: `3px solid ${t.ink}` }}
+        >
+          Continue with email ✦
+        </button>
+      </div>
+
+      <p className="text-[11px] mt-6 opacity-50 max-w-[240px] font-semibold" style={{ color: t.ink }}>
+        By continuing you agree to the quest rules and terms. No spam, just prompts.
+      </p>
+    </div>
+  );
+}
+
+const NAV_TABS = [
+  ["🏠", "Home", "home"],
+  ["✨", "Explore", "explore"],
+  ["🎒", "Backpack", "backpack"],
+  ["🏅", "Rank", "rank"],
+];
+
+export default function App() {
+  const [themeKey, setThemeKey] = useState("meadow");
+  const [screen, setScreen] = useState("home");
+  const [activeZone, setActiveZone] = useState(null);
+  const t = THEMES[themeKey];
+
+  const goTo = (s) => {
+    setActiveZone(null);
+    setScreen(s);
+  };
+  const openZone = (z) => {
+    setActiveZone(z);
+    setScreen("zone");
+  };
+
+  let body;
+  if (screen === "zone") body = <ZoneDetailScreen t={t} zone={activeZone} back={() => goTo("home")} />;
+  else if (screen === "onboarding") body = <OnboardingScreen t={t} />;
+  else if (screen === "explore") body = <ExploreScreen t={t} openZone={openZone} />;
+  else if (screen === "backpack") body = <BackpackScreen t={t} />;
+  else if (screen === "rank") body = <RankScreen t={t} />;
+  else body = <HomeScreen t={t} goTo={goTo} openZone={openZone} />;
+
+  return (
+    <div
+      className="w-full min-h-screen flex justify-center py-6"
+      style={{
+        background: `linear-gradient(180deg, ${t.bgFrom} 0%, ${t.bgTo} 100%)`,
+        fontFamily: "'Nunito', sans-serif",
+        transition: "background 0.4s ease",
+      }}
+    >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@600;700;800&display=swap');
+      `}</style>
+
+      <div
+        className="w-full max-w-sm rounded-[2.5rem] overflow-hidden relative"
+        style={{ border: `4px solid ${t.ink}`, boxShadow: `6px 8px 0 ${t.in
