@@ -1,0 +1,60 @@
+"use client";
+
+import Link from "next/link";
+import { useTheme } from "@/components/ThemeProvider";
+import BottomNav from "@/components/BottomNav";
+
+function Section({ t, title, children }) {
+  return (
+    <div className="mt-5 rounded-2xl p-4" style={{ background: t.card, border: `2.5px solid ${t.ink}` }}>
+      <div className="font-extrabold text-sm mb-2" style={{ color: t.ink }}>
+        {title}
+      </div>
+      <div className="text-sm font-semibold opacity-80" style={{ color: t.ink }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+export default function RulesView() {
+  const { t } = useTheme();
+
+  return (
+    <>
+      <div className="px-5 pb-10 pt-6">
+        <Link href="/" className="text-xs font-extrabold mb-4 inline-block" style={{ color: t.ink }}>
+          ← Back
+        </Link>
+        <h1 className="font-black text-xl font-display" style={{ color: t.ink }}>
+          📜 Game rules
+        </h1>
+
+        <Section t={t} title="Scoring (100 points total)">
+          <ul className="list-disc pl-4 space-y-1">
+            <li>Accuracy — 60 pts. How closely the AI's output matches the challenge's target answer.</li>
+            <li>Efficiency — 25 pts. Full marks for staying at or under the challenge's par word count; overshooting costs points.</li>
+            <li>Style — 15 pts. Creativity and voice, judged independently of correctness.</li>
+          </ul>
+        </Section>
+
+        <Section t={t} title="Coins and XP">
+          Clearing a challenge (score 70+) pays coins based on difficulty (1★=20 up to 5★=100), scaled by how well you scored. Every scored attempt also earns flat XP toward your player level, regardless of pass/fail.
+        </Section>
+
+        <Section t={t} title="Reputation and rank">
+          Reputation is the average of your best 20 challenge scores, and decays 2% per week of inactivity. Tiers: Bronze (0–999) → Silver (1,000–2,499) → Gold (2,500–4,999) → Prompt Master (5,000+).
+        </Section>
+
+        <Section t={t} title="Tournaments">
+          A host picks a challenge and a size (4–8 players). Everyone who joins gets the same challenge. When the host ends the tournament, the highest scorer wins — plus a 100-coin bonus.
+        </Section>
+
+        <Section t={t} title="Fair play">
+          Scores come from an AI judge comparing your output to the challenge target — not from the client, so scores can't be faked by editing the page. Submitting the same prompt repeatedly to farm coins won't out-earn actually improving your prompt.
+        </Section>
+      </div>
+      <BottomNav />
+    </>
+  );
+}

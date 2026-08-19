@@ -26,7 +26,12 @@ export default function ZoneDetailView({ zone, challenges }) {
 
         <div className="mt-6 flex flex-col gap-3">
           {challenges.map((c) => (
-            <div key={c.id} className="rounded-2xl p-4" style={{ background: t.card, border: `2.5px solid ${t.ink}` }}>
+            <Link
+              key={c.id}
+              href={`/zone/${zone.id}/challenge/${c.id}`}
+              className="rounded-2xl p-4 block active:scale-[0.98] transition-transform"
+              style={{ background: t.card, border: `2.5px solid ${t.ink}` }}
+            >
               <div className="flex items-center justify-between">
                 <span className="font-extrabold text-sm" style={{ color: t.ink }}>
                   {c.title}
@@ -38,7 +43,7 @@ export default function ZoneDetailView({ zone, challenges }) {
               <p className="text-xs mt-1 opacity-70 font-semibold" style={{ color: t.ink }}>
                 {c.brief}
               </p>
-            </div>
+            </Link>
           ))}
           {challenges.length === 0 && (
             <p className="text-sm mt-2 opacity-60 font-semibold text-center" style={{ color: t.ink }}>
