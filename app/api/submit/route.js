@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { coinsForSubmission, xpForSubmission } from "@/lib/theme";
+import { coinsForSubmission, xpForSubmission, levelForXp, PASS_SCORE } from "@/lib/theme";
 
 // ---- Provider callers -------------------------------------------------
 // Model names change over time — verify current IDs in each provider's docs
@@ -83,10 +83,53 @@ async function callGemini(prompt) {
 const PROVIDER_CALLERS = { claude: callClaude, chatgpt: callChatGPT, grok: callGrok, gemini: callGemini };
 
 // ---- Judge --------------------------------------------------------------
-// Uses OpenAI as a neutral judge (separate from the agent being tested,
-// unless the agent itself IS ChatGPT, which is still fine as a judge call).
-// Falls back to a simple word-overlap heuristic if OPENAI_API_KEY isn't set,
-// so the app keeps working even with a partial provider setup.
+// Tries Gemini first (it has a genuinely free tier), then OpenAI if that
+// key happens to be set, then falls back to a simple word-overlap
+// heuristic if neither is available — so the app keeps working even
+// with zero paid judge access.
+
+async function judgeWithGemini(output, target) {
+  const key = process.env.GOOGLE_API_KEY;
+  if (!key) return null;
+  const model = process.env.GOOGLE_JUDGE_MODEL || process.env.GOOGLE_MODEL || "gemini-2.0-flash";
+  const judgePrompt = `You are grading how well an AI's output matches a target answer.
+Target answer:
+"""${target}"""
+
+AI's actual output:
+"""${output}"""
+
+Score the AI's output against the target on two dimensions:
+- accuracy: 0-60, how closely the meaning and content match the target
+- style: 0-15, quality of writing/creativity independent of correctness
+
+Reply with ONLY strict JSON, no other text: {"accuracy": <number>, "style": <number>}`;
+
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: judgePrompt }] }],
+          generationConfig: { temperature: 0 },
+        }),
+      }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text).join("\n") || "";
+    const cleaned = text.replace(/```json|```/g, "").trim();
+    const parsed = JSON.parse(cleaned);
+    return {
+      accuracy: Math.max(0, Math.min(60, Number(parsed.accuracy) || 0)),
+      style: Math.max(0, Math.min(15, Number(parsed.style) || 0)),
+    };
+  } catch {
+    return null;
+  }
+}
 
 async function judgeWithOpenAI(output, target) {
   const key = process.env.OPENAI_API_KEY;
@@ -173,6 +216,24 @@ export async function POST(request) {
     return NextResponse.json({ error: "Challenge not found." }, { status: 404 });
   }
 
+  // Tournaments are one-shot for fairness — no unlimited retries to farm
+  // the leaderboard. Regular zone practice (no tournamentId) can still be
+  // retried freely.
+  if (tournamentId) {
+    const { data: existing } = await supabase
+      .from("submissions")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("tournament_id", tournamentId)
+      .maybeSingle();
+    if (existing) {
+      return NextResponse.json(
+        { error: "You've already submitted your entry for this tournament. One attempt per player." },
+        { status: 400 }
+      );
+    }
+  }
+
   const caller = PROVIDER_CALLERS[agentId];
   if (!caller) {
     return NextResponse.json({ error: `Unknown agent: ${agentId}` }, { status: 400 });
@@ -188,7 +249,8 @@ export async function POST(request) {
     );
   }
 
-  let judged = await judgeWithOpenAI(outputText, challenge.target_output);
+  let judged = await judgeWithGemini(outputText, challenge.target_output);
+  if (!judged) judged = await judgeWithOpenAI(outputText, challenge.target_output);
   if (!judged) judged = heuristicJudge(outputText, challenge.target_output);
 
   const efficiency = scoreEfficiency(promptText, challenge.par_tokens);
@@ -210,14 +272,19 @@ export async function POST(request) {
   }
 
   const coinsEarned = coinsForSubmission(challenge.difficulty, totalScore);
-  const xpEarned = xpForSubmission(challenge.difficulty);
+  const xpEarned = xpForSubmission(challenge.difficulty, totalScore);
 
   const { data: profile } = await supabase.from("profiles").select("coins, xp").eq("id", user.id).single();
+  const previousXp = profile?.xp || 0;
+  const newXp = previousXp + xpEarned;
+  const levelBefore = levelForXp(previousXp);
+  const levelAfter = levelForXp(newXp);
+
   await supabase
     .from("profiles")
     .update({
       coins: (profile?.coins || 0) + coinsEarned,
-      xp: (profile?.xp || 0) + xpEarned,
+      xp: newXp,
     })
     .eq("id", user.id);
 
@@ -229,6 +296,9 @@ export async function POST(request) {
     totalScore,
     coinsEarned,
     xpEarned,
-    won: totalScore >= 70,
+    won: totalScore >= PASS_SCORE,
+    passScore: PASS_SCORE,
+    leveledUp: levelAfter.level > levelBefore.level,
+    newLevel: levelAfter.level,
   });
 }

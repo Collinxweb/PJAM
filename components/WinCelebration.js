@@ -1,6 +1,6 @@
 "use client";
 
-export default function WinCelebration({ t, result, onClose }) {
+export default function WinCelebration({ t, result, onClose, onRetry, retryAllowed = true }) {
   if (!result) return null;
 
   return (
@@ -14,12 +14,12 @@ export default function WinCelebration({ t, result, onClose }) {
         className="w-full max-w-xs rounded-3xl p-6 text-center"
         style={{ background: t.card, border: `3px solid ${t.ink}`, boxShadow: `6px 8px 0 ${t.ink}` }}
       >
-        <div className="text-5xl">{result.won ? "🎉🏆" : "📝"}</div>
+        <div className="text-5xl">{result.won ? "🎉🏆" : "😞💔"}</div>
         <h2 className="font-black text-xl mt-2 font-display" style={{ color: t.ink }}>
-          {result.won ? "Challenge cleared!" : "Scored, but not cleared"}
+          {result.won ? "Challenge cleared!" : "Not quite"}
         </h2>
         <p className="text-sm font-bold mt-3" style={{ color: t.ink }}>
-          {result.totalScore}/100
+          {result.totalScore}/100 {!result.won && `(need ${result.passScore}+ to clear)`}
         </p>
         <div className="text-xs font-semibold mt-1 opacity-70 flex justify-center gap-3" style={{ color: t.ink }}>
           <span>Accuracy {result.accuracy}/60</span>
@@ -33,13 +33,44 @@ export default function WinCelebration({ t, result, onClose }) {
           </div>
         )}
 
-        <button
-          onClick={onClose}
-          className="w-full mt-5 py-3 rounded-2xl font-extrabold text-sm"
-          style={{ background: t.accent, color: t.accentInk, border: `3px solid ${t.ink}` }}
-        >
-          Continue
-        </button>
+        {!result.won && !retryAllowed && (
+          <p className="text-xs font-bold mt-3 opacity-70" style={{ color: t.ink }}>
+            This was your one tournament entry — no retries in tournament mode.
+          </p>
+        )}
+
+        {result.leveledUp && (
+          <div className="mt-3 rounded-2xl p-3" style={{ background: t.gold, color: "#3a2a00" }}>
+            <div className="font-extrabold text-sm">⭐ Level up! You're now Level {result.newLevel}</div>
+          </div>
+        )}
+
+        {result.won || !retryAllowed ? (
+          <button
+            onClick={onClose}
+            className="w-full mt-5 py-3 rounded-2xl font-extrabold text-sm"
+            style={{ background: t.accent, color: t.accentInk, border: `3px solid ${t.ink}` }}
+          >
+            Continue
+          </button>
+        ) : (
+          <div className="flex gap-2 mt-5">
+            <button
+              onClick={onClose}
+              className="flex-1 py-3 rounded-2xl font-extrabold text-sm"
+              style={{ background: t.card, color: t.ink, border: `2.5px solid ${t.ink}` }}
+            >
+              Leave it
+            </button>
+            <button
+              onClick={onRetry || onClose}
+              className="flex-1 py-3 rounded-2xl font-extrabold text-sm"
+              style={{ background: t.accent, color: t.accentInk, border: `3px solid ${t.ink}` }}
+            >
+              Retry
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

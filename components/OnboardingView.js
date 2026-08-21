@@ -15,7 +15,7 @@ export default function OnboardingView() {
 
   async function handleXSignIn() {
     await supabase.auth.signInWithOAuth({
-      provider: "x",
+      provider: "twitter",
       options: { redirectTo: `${window.location.origin}/auth/callback` },
     });
   }

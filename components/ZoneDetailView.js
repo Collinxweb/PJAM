@@ -1,11 +1,17 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useTheme } from "@/components/ThemeProvider";
 import BottomNav from "@/components/BottomNav";
+import { DIFFICULTY_BANDS } from "@/lib/theme";
 
 export default function ZoneDetailView({ zone, challenges }) {
   const { t } = useTheme();
+  const [band, setBand] = useState("all");
+
+  const shown =
+    band === "all" ? challenges : challenges.filter((c) => DIFFICULTY_BANDS[band].stars.includes(c.difficulty));
 
   return (
     <>
@@ -24,8 +30,30 @@ export default function ZoneDetailView({ zone, challenges }) {
           {zone.description}
         </p>
 
-        <div className="mt-6 flex flex-col gap-3">
-          {challenges.map((c) => (
+        <div className="mt-5">
+          <div className="text-xs font-extrabold mb-2" style={{ color: t.ink }}>
+            Difficulty
+          </div>
+          <div className="flex gap-2">
+            {["all", "easy", "medium", "hard"].map((key) => (
+              <button
+                key={key}
+                onClick={() => setBand(key)}
+                className="px-3 py-1.5 rounded-full text-xs font-bold"
+                style={{
+                  background: band === key ? t.accent : t.card,
+                  color: band === key ? t.accentInk : t.ink,
+                  border: `2px solid ${t.ink}`,
+                }}
+              >
+                {key === "all" ? "All" : DIFFICULTY_BANDS[key].label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-5 flex flex-col gap-3">
+          {shown.map((c) => (
             <Link
               key={c.id}
               href={`/zone/${zone.id}/challenge/${c.id}`}
@@ -45,9 +73,11 @@ export default function ZoneDetailView({ zone, challenges }) {
               </p>
             </Link>
           ))}
-          {challenges.length === 0 && (
+          {shown.length === 0 && (
             <p className="text-sm mt-2 opacity-60 font-semibold text-center" style={{ color: t.ink }}>
-              No challenges published in this zone yet — check back soon.
+              {challenges.length === 0
+                ? "No challenges published in this zone yet — check back soon."
+                : "No challenges at this difficulty yet."}
             </p>
           )}
         </div>

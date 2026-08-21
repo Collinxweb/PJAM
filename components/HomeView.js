@@ -40,9 +40,9 @@ export default function HomeView({ zones, agents, profile }) {
               ⚙️
             </Link>
             {profile ? (
-              <span className="text-xs font-extrabold" style={{ color: t.ink }}>
+              <Link href="/profile" className="text-xs font-extrabold" style={{ color: t.ink }}>
                 Lv.{level} · {profile.username}
-              </span>
+              </Link>
             ) : (
               <Link
                 href="/onboarding"

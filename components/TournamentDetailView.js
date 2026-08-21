@@ -1,21 +1,52 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useTheme } from "@/components/ThemeProvider";
 import BottomNav from "@/components/BottomNav";
 
-export default function TournamentDetailView({ tournament, participants, leaderboard, isHost, hasJoined, signedIn }) {
+export default function TournamentDetailView({
+  tournament,
+  participants,
+  leaderboard,
+  isHost,
+  hasJoined,
+  isWinner,
+  winnerUsername,
+  signedIn,
+}) {
   const { t } = useTheme();
   const [joining, setJoining] = useState(false);
   const [ending, setEnding] = useState(false);
   const [error, setError] = useState("");
   const [localJoined, setLocalJoined] = useState(hasJoined);
+  const [shareUrl, setShareUrl] = useState("");
+
+  // Computed client-side after mount so the real URL is always used —
+  // avoids a server/client mismatch on first paint.
+  useEffect(() => {
+    setShareUrl(window.location.href);
+  }, []);
 
   const spotsLeft = tournament.capacity - participants.length;
-  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
-  const tweetText = `I just started a PJAM tournament — think you can out-prompt me? "${tournament.challenges?.title}", ${tournament.capacity} players. Join here: ${shareUrl} 🧩⚔️`;
-  const tweetIntent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+  const inviteText = `I just started a PJAM tournament — think you can out-prompt me? "${tournament.challenges?.title}", ${tournament.capacity} players. Join here: ${shareUrl} 🧩⚔️`;
+  const inviteTweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(inviteText)}`;
+
+  const winText = `I just won a PJAM tournament — "${tournament.challenges?.title}" against ${participants.length - 1} other prompters. 🎉🏆 Come test yourself: ${shareUrl}`;
+  const winTweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(winText)}`;
+
+  async function handleNativeShare(text) {
+    if (navigator.share) {
+      try {
+        await navigator.share({ text, url: shareUrl });
+      } catch {
+        // user cancelled the share sheet — not an error
+      }
+    } else {
+      await navigator.clipboard.writeText(text);
+      alert("Copied — paste it anywhere, including Prompted or any other app.");
+    }
+  }
 
   async function handleJoin() {
     setJoining(true);
@@ -62,8 +93,32 @@ export default function TournamentDetailView({ tournament, participants, leaderb
         {tournament.status === "completed" && (
           <div className="rounded-2xl p-4 mb-4 text-center" style={{ background: t.accent, color: t.accentInk }}>
             <div className="text-3xl">🎉🏆</div>
-            <div className="font-extrabold text-sm mt-1">
-              Winner: {leaderboard[0]?.username || "—"}
+            <div className="font-extrabold text-sm mt-1">Winner: {winnerUsername || leaderboard[0]?.username || "—"}</div>
+          </div>
+        )}
+
+        {isWinner && (
+          <div className="rounded-2xl p-4 mb-4" style={{ background: t.card, border: `2.5px solid ${t.ink}` }}>
+            <div className="font-extrabold text-sm mb-2" style={{ color: t.ink }}>
+              🎉 You won! Flaunt it:
+            </div>
+            <div className="flex gap-2">
+              <a
+                href={winTweetUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl font-extrabold text-xs"
+                style={{ background: "#000", color: "#fff", border: "2px solid #000" }}
+              >
+                Share on X
+              </a>
+              <button
+                onClick={() => handleNativeShare(winText)}
+                className="flex-1 py-2.5 rounded-xl font-extrabold text-xs"
+                style={{ background: t.accent, color: t.accentInk, border: `2px solid ${t.ink}` }}
+              >
+                Share elsewhere
+              </button>
             </div>
           </div>
         )}
@@ -71,13 +126,23 @@ export default function TournamentDetailView({ tournament, participants, leaderb
         <h1 className="font-black text-xl font-display" style={{ color: t.ink }}>
           {tournament.challenges?.title || "Tournament"}
         </h1>
-        <div className="flex gap-2 mt-2">
+        {tournament.challenges?.brief && (
+          <p className="text-sm mt-2 opacity-80 font-semibold" style={{ color: t.ink }}>
+            {tournament.challenges.brief}
+          </p>
+        )}
+        <div className="flex gap-2 mt-2 flex-wrap">
           <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ background: t.card, border: `2px solid ${t.ink}`, color: t.ink }}>
             {participants.length}/{tournament.capacity} players
           </span>
           <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ background: t.card, border: `2px solid ${t.ink}`, color: t.ink }}>
             {tournament.status}
           </span>
+          {tournament.challenges?.is_custom && (
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full" style={{ background: t.gold, color: "#3a2a00" }}>
+              Custom challenge
+            </span>
+          )}
         </div>
 
         {tournament.status === "open" && !localJoined && signedIn && (
@@ -102,7 +167,7 @@ export default function TournamentDetailView({ tournament, participants, leaderb
         )}
 
         <a
-          href={tweetIntent}
+          href={inviteTweetUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center justify-center gap-2 w-full mt-3 py-3 rounded-2xl font-extrabold text-sm"
@@ -113,6 +178,13 @@ export default function TournamentDetailView({ tournament, participants, leaderb
           </svg>
           Invite players on X
         </a>
+        <button
+          onClick={() => handleNativeShare(inviteText)}
+          className="w-full mt-2 py-3 rounded-2xl font-extrabold text-sm"
+          style={{ background: t.card, color: t.ink, border: `2.5px solid ${t.ink}` }}
+        >
+          Share invite elsewhere (Prompted, WhatsApp, etc.)
+        </button>
 
         {isHost && tournament.status !== "completed" && (
           <button
@@ -126,6 +198,18 @@ export default function TournamentDetailView({ tournament, participants, leaderb
         )}
 
         {error && <p className="text-xs font-bold text-red-600 mt-2">{error}</p>}
+
+        <div className="mt-7 rounded-2xl p-4" style={{ background: t.card, border: `2.5px solid ${t.ink}` }}>
+          <div className="font-extrabold text-sm mb-2" style={{ color: t.ink }}>
+            📜 Tournament rules
+          </div>
+          <ul className="text-xs font-semibold opacity-80 list-disc pl-4 space-y-1" style={{ color: t.ink }}>
+            <li>Every player gets exactly one attempt — no retries once submitted.</li>
+            <li>Everyone is scored on the same challenge, by the same AI judge, using the same formula as regular zones.</li>
+            <li>The host decides when to close the tournament. Once closed, the highest score wins — ties are broken by whoever submitted first.</li>
+            <li>Winner receives a 100-coin bonus on top of their normal challenge reward.</li>
+          </ul>
+        </div>
 
         <div className="mt-7">
           <h2 className="font-extrabold text-sm mb-2" style={{ color: t.ink }}>

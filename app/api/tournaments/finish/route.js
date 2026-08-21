@@ -21,6 +21,7 @@ export async function POST(request) {
     .select("*")
     .eq("tournament_id", tournamentId)
     .order("best_score", { ascending: false })
+    .order("first_submitted_at", { ascending: true })
     .limit(1);
 
   const winnerId = leaderboard?.[0]?.user_id || null;

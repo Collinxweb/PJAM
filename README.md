@@ -24,7 +24,10 @@ Set these in Vercel → Project → Settings → Environment Variables (Producti
 
 **Required for the game to actually score submissions — add whichever AI providers you want playable:**
 - `ANTHROPIC_API_KEY` — powers Claude as an opponent
-- `OPENAI_API_KEY` — powers ChatGPT as an opponent, AND is used as the neutral judge that scores every submission (accuracy + style). Without this key, judging falls back to a rough word-overlap heuristic instead of a real AI judge — the app still works, just less precisely.
+- `OPENAI_API_KEY` — powers ChatGPT as an opponent, and is also used as a judging fallback (see below).
+- `GOOGLE_API_KEY` — powers Gemini as an opponent, and is tried **first** as the neutral judge for every submission (accuracy + style), since Google AI Studio offers a genuinely free tier — no billing required to get started.
+
+**Judging order:** Gemini → OpenAI → rough word-overlap heuristic. The app tries each in turn and falls back gracefully, so it keeps working even with zero paid keys configured — just less precisely without at least one real judge.
 - `XAI_API_KEY` — powers Grok as an opponent
 - `GOOGLE_API_KEY` — powers Gemini as an opponent
 
@@ -70,3 +73,19 @@ lib/theme.js             Theme palette, rank tiers, and the coin/XP/level formul
 supabase-schema.sql      Base schema (profiles, zones, challenges, submissions, ai_agents, unlocks)
 supabase-schema-v2.sql   Coins/XP/selected agent + full tournaments schema
 ```
+
+## Migration v4 (profile fields + custom tournament challenges)
+Run `supabase-schema-v4.sql` after v2 and v3. Adds:
+- `display_name` and `bio` to profiles (shown on the new `/profile` page)
+- Custom tournament challenges: a hidden `custom` zone, `is_custom`/`created_by` on challenges, and the RLS policy that lets a host insert their own challenge
+- A tie-break-aware tournament leaderboard (ties go to whoever submitted first)
+
+## What changed in this round
+- **Profile page** (`/profile`) — real editable display name, unique username, bio, and avatar (as an image URL — no upload widget yet, that'd need a Supabase Storage bucket).
+- **Achievements** replaces Backpack — real badges computed from actual submissions/tournament wins/reputation, not placeholder unlocks.
+- **Difficulty picker** (Easy/Medium/Hard) inside each zone, before the challenge list.
+- **Real win/fail distinction** — 🎉🏆 on clear (70+), 😞💔 with a Retry button on a miss (zone practice only — tournament entries are one-shot, no retry).
+- **Level system finalized**: capped at 50, level-up is detected and shown in the win screen.
+- **Tournaments**: one submission per player enforced server-side, explicit rules shown on the tournament page, custom challenge creation, tie-break by earliest submission, and a "Share your win" button (X + native share sheet) for the winner once the tournament is closed.
+- **Bottom nav** is now 5 tabs: Home, Explore, Tournaments, Achievements, Rank.
+- **Get Started** page significantly expanded for genuine first-timers.

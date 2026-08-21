@@ -112,7 +112,13 @@ export default function ChallengeSubmitView({ challenge, agents, defaultAgentId 
         </form>
       </div>
       <BottomNav />
-      <WinCelebration t={t} result={result} onClose={() => setResult(null)} />
+      <WinCelebration
+        t={t}
+        result={result}
+        onClose={() => setResult(null)}
+        onRetry={() => setResult(null)}
+        retryAllowed={!tournamentId}
+      />
     </>
   );
 }

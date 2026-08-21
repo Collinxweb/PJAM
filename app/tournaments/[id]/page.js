@@ -7,7 +7,7 @@ export default async function TournamentDetailPage({ params }) {
 
   const { data: tournament } = await supabase
     .from("tournaments")
-    .select("*, challenges(id, title, zone_id, difficulty)")
+    .select("*, challenges(id, title, brief, zone_id, difficulty, is_custom)")
     .eq("id", params.id)
     .single();
   if (!tournament) notFound();
@@ -21,7 +21,8 @@ export default async function TournamentDetailPage({ params }) {
     .from("tournament_leaderboard")
     .select("*")
     .eq("tournament_id", params.id)
-    .order("best_score", { ascending: false });
+    .order("best_score", { ascending: false })
+    .order("first_submitted_at", { ascending: true });
 
   const {
     data: { user },
@@ -29,6 +30,8 @@ export default async function TournamentDetailPage({ params }) {
 
   const isHost = user?.id === tournament.host_id;
   const hasJoined = (participants || []).some((p) => p.user_id === user?.id);
+  const isWinner = !!tournament.winner_id && user?.id === tournament.winner_id;
+  const winnerParticipant = (participants || []).find((p) => p.user_id === tournament.winner_id);
 
   return (
     <TournamentDetailView
@@ -37,6 +40,8 @@ export default async function TournamentDetailPage({ params }) {
       leaderboard={leaderboard || []}
       isHost={isHost}
       hasJoined={hasJoined}
+      isWinner={isWinner}
+      winnerUsername={winnerParticipant?.profiles?.username}
       signedIn={!!user}
     />
   );
