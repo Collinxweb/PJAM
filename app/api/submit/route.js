@@ -301,4 +301,4 @@ export async function POST(request) {
     leveledUp: levelAfter.level > levelBefore.level,
     newLevel: levelAfter.level,
   });
-}
+          }
