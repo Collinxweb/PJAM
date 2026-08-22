@@ -1,6 +1,15 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { coinsForSubmission, xpForSubmission, levelForXp, PASS_SCORE } from "@/lib/theme";
+import {
+  coinsForSubmission,
+  xpForSubmission,
+  levelForXp,
+  PASS_SCORE,
+  isAgentPlayable,
+  difficultyTierFor,
+  JUDGE_STRICTNESS_INSTRUCTIONS,
+  HEURISTIC_LENIENCY_MULTIPLIER,
+} from "@/lib/theme";
 
 // ---- Provider callers -------------------------------------------------
 // Model names change over time — verify current IDs in each provider's docs
@@ -88,11 +97,13 @@ const PROVIDER_CALLERS = { claude: callClaude, chatgpt: callChatGPT, grok: callG
 // heuristic if neither is available — so the app keeps working even
 // with zero paid judge access.
 
-async function judgeWithGemini(output, target) {
+async function judgeWithGemini(output, target, tier) {
   const key = process.env.GOOGLE_API_KEY;
   if (!key) return null;
   const model = process.env.GOOGLE_JUDGE_MODEL || process.env.GOOGLE_MODEL || "gemini-2.0-flash";
   const judgePrompt = `You are grading how well an AI's output matches a target answer.
+${JUDGE_STRICTNESS_INSTRUCTIONS[tier]}
+
 Target answer:
 """${target}"""
 
@@ -131,11 +142,13 @@ Reply with ONLY strict JSON, no other text: {"accuracy": <number>, "style": <num
   }
 }
 
-async function judgeWithOpenAI(output, target) {
+async function judgeWithOpenAI(output, target, tier) {
   const key = process.env.OPENAI_API_KEY;
   if (!key) return null;
   const model = process.env.OPENAI_JUDGE_MODEL || "gpt-4o-mini";
   const judgePrompt = `You are grading how well an AI's output matches a target answer.
+${JUDGE_STRICTNESS_INSTRUCTIONS[tier]}
+
 Target answer:
 """${target}"""
 
@@ -172,14 +185,16 @@ Reply with ONLY strict JSON, no other text: {"accuracy": <number>, "style": <num
   }
 }
 
-function heuristicJudge(output, target) {
+function heuristicJudge(output, target, tier) {
   const words = (s) => new Set(s.toLowerCase().match(/\w+/g) || []);
   const a = words(output);
   const b = words(target);
   const overlap = [...a].filter((w) => b.has(w)).length;
   const union = new Set([...a, ...b]).size || 1;
   const similarity = overlap / union;
-  return { accuracy: Math.round(similarity * 60), style: 8 };
+  const leniency = HEURISTIC_LENIENCY_MULTIPLIER[tier] ?? 1.0;
+  const accuracy = Math.max(0, Math.min(60, Math.round(similarity * 60 * leniency)));
+  return { accuracy, style: 8 };
 }
 
 function scoreEfficiency(promptText, parTokens) {
@@ -238,6 +253,9 @@ export async function POST(request) {
   if (!caller) {
     return NextResponse.json({ error: `Unknown agent: ${agentId}` }, { status: 400 });
   }
+  if (!isAgentPlayable(agentId)) {
+    return NextResponse.json({ error: "This AI opponent is coming soon — try Gemini for now." }, { status: 400 });
+  }
 
   let outputText;
   try {
@@ -249,9 +267,10 @@ export async function POST(request) {
     );
   }
 
-  let judged = await judgeWithGemini(outputText, challenge.target_output);
-  if (!judged) judged = await judgeWithOpenAI(outputText, challenge.target_output);
-  if (!judged) judged = heuristicJudge(outputText, challenge.target_output);
+  const tier = difficultyTierFor(challenge.difficulty);
+  let judged = await judgeWithGemini(outputText, challenge.target_output, tier);
+  if (!judged) judged = await judgeWithOpenAI(outputText, challenge.target_output, tier);
+  if (!judged) judged = heuristicJudge(outputText, challenge.target_output, tier);
 
   const efficiency = scoreEfficiency(promptText, challenge.par_tokens);
   const totalScore = judged.accuracy + efficiency + judged.style;
@@ -301,4 +320,4 @@ export async function POST(request) {
     leveledUp: levelAfter.level > levelBefore.level,
     newLevel: levelAfter.level,
   });
-          }
+}

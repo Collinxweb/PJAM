@@ -74,7 +74,7 @@ export default function GetStartedView() {
           Clearing a challenge (70+) earns XP toward your player Level (1 through 50) — attempts that don't clear earn no XP or coins, so leveling reflects real wins, not just tries. Separately, your Reputation — the average of your best 20 challenge scores — determines your public rank: Bronze → Silver → Gold → Prompt Master. Level shows how much you've cleared; Reputation shows how good you are.
         </Step>
         <Step t={t} num="7" title="Or skip straight to head-to-head.">
-          Join or host a Tournament — 4 to 8 players, one shared challenge (or a custom one the host writes themself), everyone gets exactly one attempt. When the host closes it, the highest scorer wins a coin bonus and bragging rights they can share straight to X.
+          Join or host a Tournament — 2 to 8 players (2 = 1v1 duel), one shared challenge (or a custom one the host writes themself), everyone gets exactly one attempt. When the host closes it, the highest scorer wins a coin bonus and bragging rights they can share straight to X.
         </Step>
 
         <Link

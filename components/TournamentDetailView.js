@@ -18,6 +18,8 @@ export default function TournamentDetailView({
   const { t } = useTheme();
   const [joining, setJoining] = useState(false);
   const [ending, setEnding] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [error, setError] = useState("");
   const [localJoined, setLocalJoined] = useState(hasJoined);
   const [shareUrl, setShareUrl] = useState("");
@@ -81,6 +83,29 @@ export default function TournamentDetailView({
       return;
     }
     window.location.reload();
+  }
+
+  async function handleDelete() {
+    if (!confirmDelete) {
+      setConfirmDelete(true);
+      setTimeout(() => setConfirmDelete(false), 4000);
+      return;
+    }
+    setDeleting(true);
+    setError("");
+    const res = await fetch("/api/tournaments/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tournamentId: tournament.id }),
+    });
+    const data = await res.json();
+    setDeleting(false);
+    if (!res.ok) {
+      setError(data.error || "Could not delete tournament.");
+      setConfirmDelete(false);
+      return;
+    }
+    window.location.href = "/tournaments";
   }
 
   return (
@@ -194,6 +219,21 @@ export default function TournamentDetailView({
             style={{ background: t.card, color: t.ink, border: `2.5px solid ${t.ink}` }}
           >
             {ending ? "Ending..." : "End tournament & reveal winner"}
+          </button>
+        )}
+
+        {isHost && (
+          <button
+            onClick={handleDelete}
+            disabled={deleting}
+            className="w-full mt-2 py-2.5 rounded-2xl font-extrabold text-sm"
+            style={{
+              background: confirmDelete ? "#dc2626" : "transparent",
+              color: confirmDelete ? "#fff" : "#dc2626",
+              border: "2.5px solid #dc2626",
+            }}
+          >
+            {deleting ? "Deleting..." : confirmDelete ? "Tap again to confirm delete" : "🗑️ Delete tournament"}
           </button>
         )}
 

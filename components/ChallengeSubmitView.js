@@ -6,16 +6,29 @@ import { useSearchParams } from "next/navigation";
 import { useTheme } from "@/components/ThemeProvider";
 import BottomNav from "@/components/BottomNav";
 import WinCelebration from "@/components/WinCelebration";
+import { isAgentPlayable } from "@/lib/theme";
 
 export default function ChallengeSubmitView({ challenge, agents, defaultAgentId }) {
   const { t } = useTheme();
   const searchParams = useSearchParams();
   const tournamentId = searchParams.get("tournament");
-  const [agentId, setAgentId] = useState(defaultAgentId || agents[0]?.id);
+  const [agentId, setAgentId] = useState(
+    isAgentPlayable(defaultAgentId) ? defaultAgentId : agents.find((a) => isAgentPlayable(a.id))?.id || agents[0]?.id
+  );
   const [prompt, setPrompt] = useState("");
   const [status, setStatus] = useState("idle"); // idle | submitting | error
   const [errorMsg, setErrorMsg] = useState("");
   const [result, setResult] = useState(null);
+  const [comingSoonId, setComingSoonId] = useState(null);
+
+  function handlePickAgent(a) {
+    if (!isAgentPlayable(a.id)) {
+      setComingSoonId(a.id);
+      setTimeout(() => setComingSoonId(null), 1800);
+      return;
+    }
+    setAgentId(a.id);
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -71,20 +84,32 @@ export default function ChallengeSubmitView({ challenge, agents, defaultAgentId 
             Prompting
           </div>
           <div className="flex gap-2 flex-wrap">
-            {agents.map((a) => (
-              <button
-                key={a.id}
-                onClick={() => setAgentId(a.id)}
-                className="px-3 py-1.5 rounded-full text-xs font-bold"
-                style={{
-                  background: agentId === a.id ? a.color_hex : t.card,
-                  color: agentId === a.id ? "#fff" : t.ink,
-                  border: `2px solid ${t.ink}`,
-                }}
-              >
-                {a.label}
-              </button>
-            ))}
+            {agents.map((a) => {
+              const playable = isAgentPlayable(a.id);
+              return (
+                <button
+                  key={a.id}
+                  onClick={() => handlePickAgent(a)}
+                  className="px-3 py-1.5 rounded-full text-xs font-bold relative"
+                  style={{
+                    background: agentId === a.id ? a.color_hex : t.card,
+                    color: agentId === a.id ? "#fff" : t.ink,
+                    border: `2px solid ${t.ink}`,
+                    opacity: playable ? 1 : 0.5,
+                  }}
+                >
+                  {a.label}
+                  {!playable && comingSoonId === a.id && (
+                    <span
+                      className="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-extrabold px-2 py-1 rounded-full"
+                      style={{ background: t.ink, color: t.card }}
+                    >
+                      Coming soon
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 

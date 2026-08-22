@@ -60,7 +60,7 @@ export default function RulesView() {
         </Section>
 
         <Section t={t} title="Tournaments">
-          A host picks a challenge — an existing one, or writes a fully custom one (title, brief, and target answer) — and a size (4–8 players). Every participant gets exactly one attempt; there are no retries in tournament mode, and everyone is judged by the same AI, on the same formula, as regular play. When the host closes it, the highest score wins (ties go to whoever submitted first) — plus a 100-coin bonus and bragging rights they can share straight to X.
+          A host picks a challenge — an existing one, or writes a fully custom one (title, brief, and target answer) — and a size (2–8 players; 2 = a 1v1 duel). Every participant gets exactly one attempt; there are no retries in tournament mode, and everyone is judged by the same AI, on the same formula, as regular play. When the host closes it, the highest score wins (ties go to whoever submitted first) — plus a 100-coin bonus and bragging rights they can share straight to X.
         </Section>
 
         <Section t={t} title="Fair play">

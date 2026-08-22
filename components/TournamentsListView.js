@@ -55,7 +55,7 @@ export default function TournamentsListView({ tournaments, challenges, signedIn 
           🏆 Tournaments
         </h1>
         <p className="text-xs mt-1 mb-4 opacity-70 font-semibold" style={{ color: t.ink }}>
-          4–8 players, one shared challenge, one attempt each. Highest score wins the pot.
+          2–8 players (2 = 1v1), one shared challenge, one attempt each. Highest score wins the pot.
         </p>
 
         {signedIn ? (
@@ -181,11 +181,11 @@ export default function TournamentsListView({ tournaments, challenges, signedIn 
             </div>
 
             <div className="text-xs font-extrabold mb-2" style={{ color: t.ink }}>
-              Players ({capacity})
+              Players ({capacity}{capacity === 2 ? " — 1v1 duel" : ""})
             </div>
             <input
               type="range"
-              min={4}
+              min={2}
               max={8}
               value={capacity}
               onChange={(e) => setCapacity(Number(e.target.value))}

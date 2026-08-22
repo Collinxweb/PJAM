@@ -80,12 +80,24 @@ Run `supabase-schema-v4.sql` after v2 and v3. Adds:
 - Custom tournament challenges: a hidden `custom` zone, `is_custom`/`created_by` on challenges, and the RLS policy that lets a host insert their own challenge
 - A tie-break-aware tournament leaderboard (ties go to whoever submitted first)
 
+## Migration v5 (1v1 tournaments + tournament delete)
+Run `supabase-schema-v5.sql` after v4. Adds:
+- Widens tournament capacity from 4–8 to **2–8**, so a capacity of 2 is a 1v1 duel
+- Adds the RLS policy letting a host delete their own tournament
+- Hardens the `submissions.tournament_id` foreign key to `ON DELETE SET NULL` as a safety net
+
+## Migration v6 (real avatar uploads)
+Run `supabase-schema-v6-avatar-storage.sql` after v5. Creates a public `avatars` storage bucket with per-user upload/update/delete policies (a player can only ever write to their own `<user_id>/avatar.<ext>` path). The Profile page now uploads an actual image file instead of accepting a pasted URL.
+
 ## What changed in this round
-- **Profile page** (`/profile`) — real editable display name, unique username, bio, and avatar (as an image URL — no upload widget yet, that'd need a Supabase Storage bucket).
+- **Profile page** (`/profile`) — real editable display name, unique username, bio, and now a **real avatar photo upload** (tap the avatar circle) via Supabase Storage — no more pasting an image URL.
 - **Achievements** replaces Backpack — real badges computed from actual submissions/tournament wins/reputation, not placeholder unlocks.
-- **Difficulty picker** (Easy/Medium/Hard) inside each zone, before the challenge list.
+- **Difficulty picker** (Easy/Medium/Hard) inside each zone, before the challenge list — and judging strictness now actually scales with it (lenient on Easy, strict on Hard), both for the AI judge prompt and the offline heuristic fallback.
 - **Real win/fail distinction** — 🎉🏆 on clear (70+), 😞💔 with a Retry button on a miss (zone practice only — tournament entries are one-shot, no retry).
 - **Level system finalized**: capped at 50, level-up is detected and shown in the win screen.
-- **Tournaments**: one submission per player enforced server-side, explicit rules shown on the tournament page, custom challenge creation, tie-break by earliest submission, and a "Share your win" button (X + native share sheet) for the winner once the tournament is closed.
+- **Only Gemini is playable right now** — Claude/ChatGPT/Grok show "Coming soon" everywhere they appear (Home badges, agent profile pages, the challenge submission picker) instead of silently failing, since those providers need paid billing that isn't set up yet.
+- **Tournaments**: **1v1 duels now supported** (capacity slider goes down to 2), one submission per player enforced server-side, explicit rules shown on the tournament page, custom challenge creation, tie-break by earliest submission, a "Share your win" button (X + native share sheet) for the winner once closed, and **hosts can now delete their own tournament** (only allowed before anyone has submitted, to protect real entries).
 - **Bottom nav** is now 5 tabs: Home, Explore, Tournaments, Achievements, Rank.
+- **Report an issue** — added to Settings, linking to X (@0xcollinxweb3) and Telegram (t.me/C0llinXweb3).
+- **"Share elsewhere" buttons** (invites and win-flaunting) use the native share sheet or clipboard copy — verified there's no real public share-intent API at prmpted.com to integrate directly, so this is the honest, working fallback until/unless that changes.
 - **Get Started** page significantly expanded for genuine first-timers.

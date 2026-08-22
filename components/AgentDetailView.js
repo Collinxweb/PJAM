@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useTheme } from "@/components/ThemeProvider";
 import BottomNav from "@/components/BottomNav";
+import { isAgentPlayable } from "@/lib/theme";
 
 const MONOGRAMS = { claude: "C", chatgpt: "G", grok: "X", gemini: "G" };
 const BLURBS = {
@@ -15,11 +16,12 @@ const BLURBS = {
 
 export default function AgentDetailView({ agent, profile, stats }) {
   const { t } = useTheme();
+  const playable = isAgentPlayable(agent.id);
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState(profile?.selected_agent_id === agent.id);
 
   async function handleSelect() {
-    if (!profile) return;
+    if (!profile || !playable) return;
     setSelecting(true);
     try {
       const res = await fetch("/api/select-agent", {
@@ -59,7 +61,14 @@ export default function AgentDetailView({ agent, profile, stats }) {
           {BLURBS[agent.id] || "A worthy opponent."}
         </p>
 
-        {profile ? (
+        {!playable ? (
+          <div
+            className="w-full mt-6 py-3 rounded-2xl font-extrabold text-sm text-center"
+            style={{ background: t.card, color: t.ink, border: `3px solid ${t.ink}`, opacity: 0.6 }}
+          >
+            🚧 Coming soon
+          </div>
+        ) : profile ? (
           <button
             onClick={handleSelect}
             disabled={selecting || selected}

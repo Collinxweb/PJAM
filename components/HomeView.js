@@ -143,7 +143,7 @@ export default function HomeView({ zones, agents, profile }) {
               Tournaments
             </div>
             <div className="text-[11px] font-semibold opacity-70" style={{ color: t.ink }}>
-              4–8 players, one challenge
+              2–8 players, one challenge
             </div>
           </Link>
           <Link

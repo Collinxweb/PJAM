@@ -10,8 +10,8 @@ export async function POST(request) {
   if (!user) return NextResponse.json({ error: "Sign in to host a tournament." }, { status: 401 });
 
   const { challengeId, capacity, customChallenge } = await request.json();
-  if (!capacity || capacity < 4 || capacity > 8) {
-    return NextResponse.json({ error: "Pick a capacity between 4 and 8." }, { status: 400 });
+  if (!capacity || capacity < 2 || capacity > 8) {
+    return NextResponse.json({ error: "Pick a capacity between 2 and 8 (2 = 1v1)." }, { status: 400 });
   }
   if (!challengeId && !customChallenge) {
     return NextResponse.json({ error: "Pick a challenge or write a custom one." }, { status: 400 });
