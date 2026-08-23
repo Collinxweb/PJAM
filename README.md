@@ -101,3 +101,13 @@ Run `supabase-schema-v6-avatar-storage.sql` after v5. Creates a public `avatars`
 - **Report an issue** — added to Settings, linking to X (@0xcollinxweb3) and Telegram (t.me/C0llinXweb3).
 - **"Share elsewhere" buttons** (invites and win-flaunting) use the native share sheet or clipboard copy — verified there's no real public share-intent API at prmpted.com to integrate directly, so this is the honest, working fallback until/unless that changes.
 - **Get Started** page significantly expanded for genuine first-timers.
+
+## Migration v7 (Builder Track — 50 levels)
+Run `supabase-schema-v7-builder-track.sql` after v6. Adds:
+- A new `builder-track` zone (sort_order 0, so it's the first thing players see)
+- `level_number`, `level_name`, and `skill` columns on `challenges` (nullable — only Builder Track rows use them)
+- All 50 real levels, from "First Blueprint" (Level 1, Easy) to "Grandmaster Architect" (Level 50, Hard) — each with a genuine brief and a complete, correct target answer, not placeholder text. Difficulty bands: Levels 1–17 Easy, 18–34 Normal, 35–50 Hard, matching the game's existing difficulty system exactly.
+
+**Fixed in this round: the "stuck on the same challenge after winning" bug.** The win screen's Continue button previously just closed the popup — it never actually took you anywhere or cleared your old prompt. It's now a real navigation: on a zone win it goes to the next uncleared challenge (or back to the zone if none left); on a tournament entry it returns to the tournament page; "Leave it" on a failed attempt now clears the stale prompt too.
+
+**Builder Track is sequential and locked, enforced on the server, not just the UI** — Level N stays locked until Level N-1 is cleared. Typing a later level's URL directly redirects back to the track rather than letting you skip ahead.

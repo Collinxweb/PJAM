@@ -8,7 +8,7 @@ import BottomNav from "@/components/BottomNav";
 import WinCelebration from "@/components/WinCelebration";
 import { isAgentPlayable } from "@/lib/theme";
 
-export default function ChallengeSubmitView({ challenge, agents, defaultAgentId }) {
+export default function ChallengeSubmitView({ challenge, agents, defaultAgentId, zoneChallenges = [], clearedChallengeIds = [] }) {
   const { t } = useTheme();
   const searchParams = useSearchParams();
   const tournamentId = searchParams.get("tournament");
@@ -20,6 +20,21 @@ export default function ChallengeSubmitView({ challenge, agents, defaultAgentId 
   const [errorMsg, setErrorMsg] = useState("");
   const [result, setResult] = useState(null);
   const [comingSoonId, setComingSoonId] = useState(null);
+
+  // zoneChallenges arrives pre-sorted by the server (level order for the
+  // Builder Track, difficulty order elsewhere) — the first uncleared entry
+  // that isn't this one is genuinely "what to do next."
+  const nextChallenge = zoneChallenges.find((c) => c.id !== challenge.id && !clearedChallengeIds.includes(c.id));
+
+  let continueHref = `/zone/${challenge.zone_id}`;
+  let continueLabel = "Back to zone →";
+  if (tournamentId) {
+    continueHref = `/tournaments/${tournamentId}`;
+    continueLabel = "Back to tournament →";
+  } else if (nextChallenge) {
+    continueHref = `/zone/${challenge.zone_id}/challenge/${nextChallenge.id}`;
+    continueLabel = challenge.zone_id === "builder-track" ? `Next: Level ${nextChallenge.level_number} →` : "Next challenge →";
+  }
 
   function handlePickAgent(a) {
     if (!isAgentPlayable(a.id)) {
@@ -53,6 +68,11 @@ export default function ChallengeSubmitView({ challenge, agents, defaultAgentId 
       setErrorMsg(err.message);
       setStatus("idle");
     }
+  }
+
+  function handleLeave() {
+    setResult(null);
+    setPrompt("");
   }
 
   return (
@@ -140,9 +160,11 @@ export default function ChallengeSubmitView({ challenge, agents, defaultAgentId 
       <WinCelebration
         t={t}
         result={result}
-        onClose={() => setResult(null)}
+        onClose={handleLeave}
         onRetry={() => setResult(null)}
         retryAllowed={!tournamentId}
+        continueHref={continueHref}
+        continueLabel={continueLabel}
       />
     </>
   );

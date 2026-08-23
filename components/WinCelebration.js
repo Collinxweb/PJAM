@@ -1,6 +1,8 @@
 "use client";
 
-export default function WinCelebration({ t, result, onClose, onRetry, retryAllowed = true }) {
+import Link from "next/link";
+
+export default function WinCelebration({ t, result, onClose, onRetry, retryAllowed = true, continueHref, continueLabel = "Continue" }) {
   if (!result) return null;
 
   return (
@@ -46,13 +48,23 @@ export default function WinCelebration({ t, result, onClose, onRetry, retryAllow
         )}
 
         {result.won || !retryAllowed ? (
-          <button
-            onClick={onClose}
-            className="w-full mt-5 py-3 rounded-2xl font-extrabold text-sm"
-            style={{ background: t.accent, color: t.accentInk, border: `3px solid ${t.ink}` }}
-          >
-            Continue
-          </button>
+          continueHref ? (
+            <Link
+              href={continueHref}
+              className="block w-full mt-5 py-3 rounded-2xl font-extrabold text-sm"
+              style={{ background: t.accent, color: t.accentInk, border: `3px solid ${t.ink}` }}
+            >
+              {continueLabel}
+            </Link>
+          ) : (
+            <button
+              onClick={onClose}
+              className="w-full mt-5 py-3 rounded-2xl font-extrabold text-sm"
+              style={{ background: t.accent, color: t.accentInk, border: `3px solid ${t.ink}` }}
+            >
+              Continue
+            </button>
+          )
         ) : (
           <div className="flex gap-2 mt-5">
             <button
