@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { getBuilderLevel } from "@/lib/progress";
 import {
   coinsForSubmission,
   xpForSubmission,
-  levelForXp,
   PASS_SCORE,
   isAgentPlayable,
   difficultyTierFor,
@@ -16,11 +16,11 @@ import {
 // before relying on this in production. Defaults below are read from env
 // vars so they can be updated without touching code.
 
-async function callClaude(prompt) {
+async function callClaude(prompt, maxOutputTokens = 500) {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) throw new Error("Missing ANTHROPIC_API_KEY");
   const model = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  const res = await fetchWithTimeout("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -29,7 +29,7 @@ async function callClaude(prompt) {
     },
     body: JSON.stringify({
       model,
-      max_tokens: 1024,
+      max_tokens: maxOutputTokens,
       messages: [{ role: "user", content: prompt }],
     }),
   });
@@ -38,16 +38,17 @@ async function callClaude(prompt) {
   return (data.content || []).map((b) => b.text || "").join("\n");
 }
 
-async function callChatGPT(prompt) {
+async function callChatGPT(prompt, maxOutputTokens = 500) {
   const key = process.env.OPENAI_API_KEY;
   if (!key) throw new Error("Missing OPENAI_API_KEY");
   const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  const res = await fetchWithTimeout("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
     body: JSON.stringify({
       model,
       messages: [{ role: "user", content: prompt }],
+      max_tokens: maxOutputTokens,
     }),
   });
   if (!res.ok) throw new Error(`OpenAI API error: ${res.status} ${await res.text()}`);
@@ -55,16 +56,17 @@ async function callChatGPT(prompt) {
   return data.choices?.[0]?.message?.content || "";
 }
 
-async function callGrok(prompt) {
+async function callGrok(prompt, maxOutputTokens = 500) {
   const key = process.env.XAI_API_KEY;
   if (!key) throw new Error("Missing XAI_API_KEY");
   const model = process.env.XAI_MODEL || "grok-2-latest";
-  const res = await fetch("https://api.x.ai/v1/chat/completions", {
+  const res = await fetchWithTimeout("https://api.x.ai/v1/chat/completions", {
     method: "POST",
     headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
     body: JSON.stringify({
       model,
       messages: [{ role: "user", content: prompt }],
+      max_tokens: maxOutputTokens,
     }),
   });
   if (!res.ok) throw new Error(`xAI API error: ${res.status} ${await res.text()}`);
@@ -72,16 +74,34 @@ async function callGrok(prompt) {
   return data.choices?.[0]?.message?.content || "";
 }
 
-async function callGemini(prompt) {
+// Fetch with a hard timeout so a slow/stuck provider request fails fast
+// instead of leaving the player staring at "Scoring..." indefinitely.
+async function fetchWithTimeout(url, options, timeoutMs = 20000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function callGemini(prompt, maxOutputTokens = 500) {
   const key = process.env.GOOGLE_API_KEY;
   if (!key) throw new Error("Missing GOOGLE_API_KEY");
   const model = process.env.GOOGLE_MODEL || "gemini-2.0-flash";
-  const res = await fetch(
+  const res = await fetchWithTimeout(
     `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
     {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        // Capping output length is the single biggest lever on response
+        // time — these are short challenge answers, not essays, so there's
+        // no reason to let generation run unbounded.
+        generationConfig: { maxOutputTokens },
+      }),
     }
   );
   if (!res.ok) throw new Error(`Gemini API error: ${res.status} ${await res.text()}`);
@@ -117,16 +137,20 @@ Score the AI's output against the target on two dimensions:
 Reply with ONLY strict JSON, no other text: {"accuracy": <number>, "style": <number>}`;
 
   try {
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
       {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           contents: [{ parts: [{ text: judgePrompt }] }],
-          generationConfig: { temperature: 0 },
+          // The judge only ever needs to output ~15 tokens of JSON — a tiny
+          // cap here keeps this call fast regardless of how long the
+          // target/output text being graded is.
+          generationConfig: { temperature: 0, maxOutputTokens: 100 },
         }),
-      }
+      },
+      12000
     );
     if (!res.ok) return null;
     const data = await res.json();
@@ -161,19 +185,24 @@ Score the AI's output against the target on two dimensions:
 
 Reply with ONLY strict JSON, no other text: {"accuracy": <number>, "style": <number>}`;
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model,
-      messages: [{ role: "user", content: judgePrompt }],
-      temperature: 0,
-    }),
-  });
-  if (!res.ok) return null;
-  const data = await res.json();
-  const text = data.choices?.[0]?.message?.content || "";
   try {
+    const res = await fetchWithTimeout(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: "user", content: judgePrompt }],
+          temperature: 0,
+          max_tokens: 100,
+        }),
+      },
+      12000
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || "";
     const cleaned = text.replace(/```json|```/g, "").trim();
     const parsed = JSON.parse(cleaned);
     return {
@@ -257,9 +286,14 @@ export async function POST(request) {
     return NextResponse.json({ error: "This AI opponent is coming soon — try Gemini for now." }, { status: 400 });
   }
 
+  // Cap how much the agent generates based on the challenge's expected
+  // answer length — these are short, focused challenges, so there's no
+  // reason to let a response run long and slow.
+  const maxOutputTokens = Math.min(900, Math.max(200, (challenge.par_tokens || 40) * 8));
+
   let outputText;
   try {
-    outputText = await caller(promptText);
+    outputText = await caller(promptText, maxOutputTokens);
   } catch (err) {
     return NextResponse.json(
       { error: `Could not reach ${agentId}: ${err.message}. Check that its API key is set in Vercel env vars.` },
@@ -274,6 +308,12 @@ export async function POST(request) {
 
   const efficiency = scoreEfficiency(promptText, challenge.par_tokens);
   const totalScore = judged.accuracy + efficiency + judged.style;
+  const won = totalScore >= PASS_SCORE;
+
+  // Level is literally "highest Builder Track level cleared" — get that
+  // BEFORE inserting this submission, so we can tell whether this attempt
+  // actually represents new forward progress.
+  const levelBefore = await getBuilderLevel(supabase, user.id);
 
   const { error: insertErr } = await supabase.from("submissions").insert({
     user_id: user.id,
@@ -294,18 +334,16 @@ export async function POST(request) {
   const xpEarned = xpForSubmission(challenge.difficulty, totalScore);
 
   const { data: profile } = await supabase.from("profiles").select("coins, xp").eq("id", user.id).single();
-  const previousXp = profile?.xp || 0;
-  const newXp = previousXp + xpEarned;
-  const levelBefore = levelForXp(previousXp);
-  const levelAfter = levelForXp(newXp);
-
   await supabase
     .from("profiles")
     .update({
       coins: (profile?.coins || 0) + coinsEarned,
-      xp: newXp,
+      xp: (profile?.xp || 0) + xpEarned,
     })
     .eq("id", user.id);
+
+  const isNewBuilderLevel = won && challenge.zone_id === "builder-track" && challenge.level_number > levelBefore;
+  const newLevel = isNewBuilderLevel ? challenge.level_number : levelBefore;
 
   return NextResponse.json({
     outputText,
@@ -315,9 +353,9 @@ export async function POST(request) {
     totalScore,
     coinsEarned,
     xpEarned,
-    won: totalScore >= PASS_SCORE,
+    won,
     passScore: PASS_SCORE,
-    leveledUp: levelAfter.level > levelBefore.level,
-    newLevel: levelAfter.level,
+    leveledUp: isNewBuilderLevel,
+    newLevel,
   });
 }

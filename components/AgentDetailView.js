@@ -8,10 +8,10 @@ import { isAgentPlayable } from "@/lib/theme";
 
 const MONOGRAMS = { claude: "C", chatgpt: "G", grok: "X", gemini: "G" };
 const BLURBS = {
-  claude: "Careful, thorough, and strong at following nuanced instructions. A good pick for Constraint Vault and Chain-of-Thought Hollow.",
-  chatgpt: "Fast and versatile across styles. A solid all-rounder for Few-Shot Arena and Persona & Style Bay.",
-  grok: "Terse and direct by default — rewards prompts that are equally tight. Good practice ground for Instruction Basics.",
-  gemini: "Strong at structured, multi-step reasoning. Worth testing in Chain-of-Thought Hollow.",
+  claude: "Careful, thorough, and strong at following nuanced instructions — a good match for the harder Builder Track levels once it's live.",
+  chatgpt: "Fast and versatile across styles — a solid all-rounder once it's live.",
+  grok: "Terse and direct by default — rewards prompts that are equally tight, once it's live.",
+  gemini: "Strong at structured, multi-step reasoning. The only opponent actually playable right now — put it to work in the Builder Track.",
 };
 
 export default function AgentDetailView({ agent, profile, stats }) {

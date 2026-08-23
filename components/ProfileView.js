@@ -4,10 +4,10 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import { useTheme } from "@/components/ThemeProvider";
 import BottomNav from "@/components/BottomNav";
-import { tierForReputation, levelForXp } from "@/lib/theme";
+import { tierForReputation, LEVEL_CAP } from "@/lib/theme";
 import { createClient } from "@/lib/supabase/client";
 
-export default function ProfileView({ profile }) {
+export default function ProfileView({ profile, builderLevel = 0 }) {
   const { t } = useTheme();
   const supabase = createClient();
   const fileInputRef = useRef(null);
@@ -21,7 +21,8 @@ export default function ProfileView({ profile }) {
 
   const reputation = profile?.reputation ?? 0;
   const tier = tierForReputation(reputation);
-  const { level, maxed } = levelForXp(profile?.xp ?? 0);
+  const level = builderLevel;
+  const maxed = level >= LEVEL_CAP;
 
   async function handleAvatarPick(e) {
     const file = e.target.files?.[0];

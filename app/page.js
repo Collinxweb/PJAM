@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import HomeView from "@/components/HomeView";
+import { getBuilderLevel } from "@/lib/progress";
 
 export default async function HomePage() {
   const supabase = createClient();
@@ -21,10 +22,12 @@ export default async function HomePage() {
   } = await supabase.auth.getUser();
 
   let profile = null;
+  let builderLevel = 0;
   if (user) {
     const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
     profile = data;
+    builderLevel = await getBuilderLevel(supabase, user.id);
   }
 
-  return <HomeView zones={zones || []} agents={agents || []} profile={profile} />;
+  return <HomeView zones={zones || []} agents={agents || []} profile={profile} builderLevel={builderLevel} />;
 }

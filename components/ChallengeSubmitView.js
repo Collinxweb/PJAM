@@ -161,7 +161,7 @@ export default function ChallengeSubmitView({ challenge, agents, defaultAgentId,
         t={t}
         result={result}
         onClose={handleLeave}
-        onRetry={() => setResult(null)}
+        onRetry={handleLeave}
         retryAllowed={!tournamentId}
         continueHref={continueHref}
         continueLabel={continueLabel}

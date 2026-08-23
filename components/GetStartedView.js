@@ -59,7 +59,7 @@ export default function GetStartedView() {
           Choose which AI you're prompting — Claude, ChatGPT, Grok, or Gemini. Each one "thinks" a little differently, so a prompt that works perfectly on one might flop on another. Part of the game is learning those differences.
         </Step>
         <Step t={t} num="2" title="Enter a zone, pick a difficulty.">
-          Six zones, six real prompt-engineering skills — from basic instructions to multi-step reasoning. Inside a zone, choose Easy, Medium, or Hard before picking a challenge. Easy is a good place to start if this is genuinely your first time.
+          The Builder Track is where the real game lives right now — 50 sequential levels teaching real skills. The other zones (Foundations, Pattern, Precision, Voice, Logic, Sprint) are on the way, shown dimmed until their own levels are built.
         </Step>
         <Step t={t} num="3" title="Read the challenge carefully.">
           Every challenge tells you exactly what output you're trying to get the AI to produce — a specific answer, format, or style. Your job is to write the prompt that gets the AI there, not to answer it yourself.
@@ -71,7 +71,7 @@ export default function GetStartedView() {
           You're scored out of 100: Accuracy (60 pts, how close the output matches the target), Efficiency (25 pts, staying near the challenge's word-count target), and Style (15 pts, creativity). Score 70 or higher and you clear it — 🎉🏆 shows up, you earn coins and XP, and you can retry to improve. Score under 70 and you'll see 😞💔 with a Retry button — no penalty for trying again in normal zones.
         </Step>
         <Step t={t} num="6" title="Level up and climb the ranks.">
-          Clearing a challenge (70+) earns XP toward your player Level (1 through 50) — attempts that don't clear earn no XP or coins, so leveling reflects real wins, not just tries. Separately, your Reputation — the average of your best 20 challenge scores — determines your public rank: Bronze → Silver → Gold → Prompt Master. Level shows how much you've cleared; Reputation shows how good you are.
+          Clearing a Builder Track challenge (70+) sets your player Level to match that level's number — Builder Track has 50 levels, so Level is capped at 50. Clearing challenges in other zones still earns coins and XP, but only Builder Track moves your Level, since it's the main path to mastering AI prompting. Separately, your Reputation — the average of your best 20 challenge scores — determines your public rank: Bronze → Silver → Gold → Prompt Master. Level shows how far you've progressed; Reputation shows how good you are.
         </Step>
         <Step t={t} num="7" title="Or skip straight to head-to-head.">
           Join or host a Tournament — 2 to 8 players (2 = 1v1 duel), one shared challenge (or a custom one the host writes themself), everyone gets exactly one attempt. When the host closes it, the highest scorer wins a coin bonus and bragging rights they can share straight to X.

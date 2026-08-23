@@ -111,3 +111,20 @@ Run `supabase-schema-v7-builder-track.sql` after v6. Adds:
 **Fixed in this round: the "stuck on the same challenge after winning" bug.** The win screen's Continue button previously just closed the popup — it never actually took you anywhere or cleared your old prompt. It's now a real navigation: on a zone win it goes to the next uncleared challenge (or back to the zone if none left); on a tournament entry it returns to the tournament page; "Leave it" on a failed attempt now clears the stale prompt too.
 
 **Builder Track is sequential and locked, enforced on the server, not just the UI** — Level N stays locked until Level N-1 is cleared. Typing a later level's URL directly redirects back to the track rather than letting you skip ahead.
+
+## Migration v8 (dim placeholder zones)
+Run `supabase-schema-v8-dim-placeholder-zones.sql` after v7. Renames the 6 original zones to match the Builder Track's naming family and marks them `coming_soon` (still visible in Explore/Home, but rendered dimmed and non-clickable in the app):
+- Instruction Basics → **Foundations Track**
+- Few-Shot Arena → **Pattern Track**
+- Constraint Vault → **Precision Track**
+- Persona & Style Bay → **Voice Track**
+- Chain-of-Thought Hollow → **Logic Track**
+- Daily Rush → **Sprint Track**
+
+Builder Track remains the only fully live zone for now, and carries the game on its own until the others get their own real levels.
+
+## What changed in this round
+- **Fixed a real design flaw, not just a bug**: "Level" on the Home header and Profile page was previously computed from an abstract XP curve, completely disconnected from "Level 3" shown inside the Builder Track — two different numbers sharing one word. Player Level is now **literally** your highest cleared Builder Track level (see `lib/progress.js`), so clearing Builder Track Level 3 makes your player Level show 3, everywhere, immediately.
+- **Retry now actually clears the prompt box** — previously only "Leave it" did; both now give a genuinely fresh attempt.
+- **AI judge sped up**: added response-length caps (the judge only ever needs to output ~15 tokens of JSON, so it's capped tightly) and a hard 20-second timeout on every provider call so a slow request fails fast with a clear error instead of hanging indefinitely. Applied consistently across all four providers, not just Gemini, so this holds up once more keys are added.
+- **Placeholder zones renamed and dimmed** (see Migration v8) so the game reads as "Builder Track is live, more is coming" rather than six half-finished zones sitting alongside it.

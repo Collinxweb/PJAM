@@ -6,14 +6,14 @@ import Mascot from "@/components/Mascot";
 import AgentBadge from "@/components/AgentBadge";
 import ZoneCard from "@/components/ZoneCard";
 import BottomNav from "@/components/BottomNav";
-import { tierForReputation, levelForXp } from "@/lib/theme";
+import { tierForReputation } from "@/lib/theme";
 
-export default function HomeView({ zones, agents, profile }) {
+export default function HomeView({ zones, agents, profile, builderLevel = 0 }) {
   const { t } = useTheme();
   const reputation = profile?.reputation ?? 0;
   const tier = tierForReputation(reputation);
   const coins = profile?.coins ?? 0;
-  const { level } = levelForXp(profile?.xp ?? 0);
+  const level = builderLevel;
 
   return (
     <>
@@ -123,7 +123,7 @@ export default function HomeView({ zones, agents, profile }) {
             </Link>
           </div>
           <p className="text-xs mb-3 opacity-70 font-semibold" style={{ color: t.ink }}>
-            Six zones, six prompt-engineering skills. Tap one to enter.
+            Start with the Builder Track — 50 real levels. Other zones are on the way.
           </p>
           <div className="grid grid-cols-2 gap-3">
             {zones.map((z) => (

@@ -1,6 +1,34 @@
 import Link from "next/link";
 
 export default function ZoneCard({ zone, t, tag }) {
+  if (zone.coming_soon) {
+    return (
+      <div
+        className="rounded-3xl p-4 flex flex-col gap-1 select-none relative"
+        style={{
+          background: t.card,
+          border: `3px solid ${t.ink}`,
+          boxShadow: `4px 5px 0 ${t.ink}`,
+          opacity: 0.5,
+        }}
+      >
+        <span
+          className="absolute top-3 right-3 text-[9px] font-extrabold px-2 py-0.5 rounded-full"
+          style={{ background: t.ink, color: t.card }}
+        >
+          🚧 Soon
+        </span>
+        <div className="text-3xl">{zone.emoji}</div>
+        <div className="font-extrabold text-base leading-tight" style={{ color: t.ink }}>
+          {zone.name}
+        </div>
+        <div className="text-xs mt-1 opacity-70" style={{ color: t.ink }}>
+          {zone.description}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Link
       href={`/zone/${zone.id}`}

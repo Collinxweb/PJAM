@@ -44,11 +44,11 @@ export default function RulesView() {
         </Section>
 
         <Section t={t} title="Coins and XP">
-          Clearing a challenge (score 70+) pays coins based on difficulty (1★=20 up to 5★=100), scaled by how well you scored, plus flat XP toward your player Level. Scoring under 70 pays nothing — no coins, no XP — and prompts a retry. Leveling reflects challenges actually cleared, not just attempts made.
+          Clearing a challenge (score 70+) pays coins based on difficulty (1★=20 up to 5★=100), scaled by how well you scored, plus flat XP. Scoring under 70 pays nothing — no coins, no XP — and prompts a retry.
         </Section>
 
         <Section t={t} title="Levels">
-          There are 50 player levels. Each level needs more cumulative XP than the last (Level N needs N×100 XP), earned only from clears. Level reflects how much you've cleared — it's separate from Reputation, which reflects how well you play.
+          Your player Level is literally your Builder Track progress — clearing Builder Track Level 12 sets your Level to 12. There are 50 Builder Track levels, so Level is capped at 50. Clearing challenges in other zones earns coins and XP, but doesn't move your Level — only Builder Track does, since it's the main path to actually leveling up. Level is separate from Reputation, which reflects how well you play, not how far you've gotten.
         </Section>
 
         <Section t={t} title="Reputation and rank">
