@@ -6,9 +6,10 @@ import Mascot from "@/components/Mascot";
 import AgentBadge from "@/components/AgentBadge";
 import ZoneCard from "@/components/ZoneCard";
 import BottomNav from "@/components/BottomNav";
+import DailyRushPopup from "@/components/DailyRushPopup";
 import { tierForReputation } from "@/lib/theme";
 
-export default function HomeView({ zones, agents, profile, builderLevel = 0 }) {
+export default function HomeView({ zones, agents, profile, builderLevel = 0, showDailyRushPopup = false, dailyRushBrief = null }) {
   const { t } = useTheme();
   const reputation = profile?.reputation ?? 0;
   const tier = tierForReputation(reputation);
@@ -35,12 +36,28 @@ export default function HomeView({ zones, agents, profile, builderLevel = 0 }) {
               PJAM
             </span>
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/settings" className="text-xs font-extrabold opacity-70" style={{ color: t.ink }}>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/settings"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-sm"
+              style={{ background: t.card, border: `2px solid ${t.ink}` }}
+              aria-label="Settings"
+            >
               ⚙️
             </Link>
             {profile ? (
-              <Link href="/profile" className="text-xs font-extrabold" style={{ color: t.ink }}>
+              <Link href="/profile" className="flex items-center gap-1.5 text-xs font-extrabold" style={{ color: t.ink }}>
+                <div
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs overflow-hidden shrink-0"
+                  style={{ background: t.accent, border: `1.5px solid ${t.ink}` }}
+                >
+                  {profile.avatar_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    "🙂"
+                  )}
+                </div>
                 Lv.{level} · {profile.username}
               </Link>
             ) : (
@@ -134,6 +151,19 @@ export default function HomeView({ zones, agents, profile, builderLevel = 0 }) {
 
         <div className="mt-7 grid grid-cols-2 gap-3">
           <Link
+            href="/daily-rush"
+            className="rounded-3xl p-4"
+            style={{ background: t.card, border: `3px solid ${t.ink}`, boxShadow: `4px 5px 0 ${t.ink}` }}
+          >
+            <div className="text-2xl">⏳</div>
+            <div className="font-extrabold text-sm mt-1" style={{ color: t.ink }}>
+              Daily Rush
+            </div>
+            <div className="text-[11px] font-semibold opacity-70" style={{ color: t.ink }}>
+              New challenge, first 10 win big
+            </div>
+          </Link>
+          <Link
             href="/tournaments"
             className="rounded-3xl p-4"
             style={{ background: t.card, border: `3px solid ${t.ink}`, boxShadow: `4px 5px 0 ${t.ink}` }}
@@ -146,20 +176,23 @@ export default function HomeView({ zones, agents, profile, builderLevel = 0 }) {
               2–8 players, one challenge
             </div>
           </Link>
-          <Link
-            href="/rules"
-            className="rounded-3xl p-4"
-            style={{ background: t.card, border: `3px solid ${t.ink}`, boxShadow: `4px 5px 0 ${t.ink}` }}
-          >
-            <div className="text-2xl">📜</div>
-            <div className="font-extrabold text-sm mt-1" style={{ color: t.ink }}>
+        </div>
+
+        <Link
+          href="/rules"
+          className="mt-3 rounded-3xl p-4 flex items-center gap-3"
+          style={{ background: t.card, border: `3px solid ${t.ink}`, boxShadow: `4px 5px 0 ${t.ink}` }}
+        >
+          <span className="text-2xl">📜</span>
+          <div>
+            <div className="font-extrabold text-sm" style={{ color: t.ink }}>
               Game Rules
             </div>
             <div className="text-[11px] font-semibold opacity-70" style={{ color: t.ink }}>
               Scoring, tiers, formats
             </div>
-          </Link>
-        </div>
+          </div>
+        </Link>
 
         <Link
           href="/rank"
@@ -180,6 +213,7 @@ export default function HomeView({ zones, agents, profile, builderLevel = 0 }) {
         </Link>
       </div>
       <BottomNav />
+      {showDailyRushPopup && <DailyRushPopup t={t} brief={dailyRushBrief} />}
     </>
   );
 }

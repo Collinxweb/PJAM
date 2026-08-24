@@ -128,3 +128,20 @@ Builder Track remains the only fully live zone for now, and carries the game on 
 - **Retry now actually clears the prompt box** — previously only "Leave it" did; both now give a genuinely fresh attempt.
 - **AI judge sped up**: added response-length caps (the judge only ever needs to output ~15 tokens of JSON, so it's capped tightly) and a hard 20-second timeout on every provider call so a slow request fails fast with a clear error instead of hanging indefinitely. Applied consistently across all four providers, not just Gemini, so this holds up once more keys are added.
 - **Placeholder zones renamed and dimmed** (see Migration v8) so the game reads as "Builder Track is live, more is coming" rather than six half-finished zones sitting alongside it.
+
+## Migration v9 (Daily Rush rebuilt as a real feature)
+Run `supabase-schema-v9-daily-rush.sql` after v8. This is a genuine rebuild, not a patch — Daily Rush was previously just one placeholder challenge buried inside a difficulty-filtered zone, which is why it was hard to find. It's now:
+- Its own dedicated feature at `/daily-rush`, with a persistent card on Home (not just findable via a one-time popup)
+- A real rotating pool of **30 creative "build a certain thing via prompt" challenges** — deterministically mapped to the calendar date (`lib/dailyRush.js`), no cron job needed, cycles on repeat after 30 days
+- **Creativity-judged, not accuracy-judged** — there's no fixed correct answer; the AI judge scores originality and how well the output fulfills the brief
+- **One attempt per player per day**, enforced server-side — this is what makes "first 10 solvers" a fair, real ranking rather than something gameable by resubmitting
+- **First 10 solvers get a flat 200-coin bonus**; solving later in the day still pays a smaller reward scaled by creativity score; not solving (score under 60) pays nothing
+- A **once-per-day popup** on Home, shown exactly once per calendar day (tracked via `profiles.last_daily_rush_seen_date`), plus the persistent Home card for whenever a player wants to check in on it directly
+- **Winners can flaunt on X** — an auto-generated tweet with their rank and score, same share pattern as tournament wins
+
+The old zone-based Daily Rush entry (`zones.id = 'daily-rush'`) is retired (`active = false`) by this migration, so it no longer shows up in Explore/Home as a browsable zone — it's fully replaced by the dedicated feature.
+
+## Also fixed in this round
+- **Shared AI provider code**: extracted the four provider-calling functions into `lib/aiProviders.js` so both the regular challenge submit route and the new Daily Rush route call providers identically, instead of duplicating ~150 lines.
+- **Settings is now a real visible button** (a bordered circle, not a faint emoji) in the Home header, with a small avatar circle next to the username/level.
+- **Log out finally exists** — added to `/settings`, calls `supabase.auth.signOut()` for real and redirects home. This was missing entirely before; there was no way to sign out of the app at all.

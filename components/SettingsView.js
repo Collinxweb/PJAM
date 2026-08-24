@@ -1,12 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useTheme } from "@/components/ThemeProvider";
 import BottomNav from "@/components/BottomNav";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
+import { createClient } from "@/lib/supabase/client";
 
-export default function SettingsView() {
+export default function SettingsView({ signedIn = false }) {
   const { t } = useTheme();
+  const supabase = createClient();
+  const [loggingOut, setLoggingOut] = useState(false);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  }
 
   return (
     <>
@@ -56,6 +66,17 @@ export default function SettingsView() {
             </a>
           </div>
         </div>
+
+        {signedIn && (
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="w-full mt-5 py-3 rounded-2xl font-extrabold text-sm"
+            style={{ background: "transparent", color: "#dc2626", border: "2.5px solid #dc2626" }}
+          >
+            {loggingOut ? "Signing out..." : "Log out"}
+          </button>
+        )}
       </div>
       <BottomNav />
     </>
