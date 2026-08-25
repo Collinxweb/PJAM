@@ -33,7 +33,7 @@ export default function ChallengeSubmitView({ challenge, agents, defaultAgentId,
     continueLabel = "Back to tournament →";
   } else if (nextChallenge) {
     continueHref = `/zone/${challenge.zone_id}/challenge/${nextChallenge.id}`;
-    continueLabel = challenge.zone_id === "builder-track" ? `Next: Level ${nextChallenge.level_number} →` : "Next challenge →";
+    continueLabel = nextChallenge.level_number ? `Next: Level ${nextChallenge.level_number} →` : "Next challenge →";
   }
 
   function handlePickAgent(a) {

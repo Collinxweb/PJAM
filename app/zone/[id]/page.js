@@ -3,13 +3,19 @@ import { createClient } from "@/lib/supabase/server";
 import ZoneDetailView from "@/components/ZoneDetailView";
 import { PASS_SCORE } from "@/lib/theme";
 
+// Any zone whose challenges use level_number is treated as a sequential
+// "track" — locked levels, level names, progress count — rather than a
+// flat difficulty-filtered list. This covers Builder Track, Integrations
+// Track, and any future track without hardcoding each zone's ID here.
+const TRACK_ZONE_IDS = ["builder-track", "integrations-track"];
+
 export default async function ZonePage({ params }) {
   const supabase = createClient();
 
   const { data: zone } = await supabase.from("zones").select("*").eq("id", params.id).single();
   if (!zone) notFound();
 
-  const isBuilderTrack = params.id === "builder-track";
+  const isTrack = TRACK_ZONE_IDS.includes(params.id);
 
   let query = supabase
     .from("challenges")
@@ -17,14 +23,14 @@ export default async function ZonePage({ params }) {
     .eq("zone_id", params.id)
     .eq("active", true);
 
-  query = isBuilderTrack
+  query = isTrack
     ? query.order("level_number", { ascending: true, nullsFirst: false })
     : query.order("difficulty");
 
   const { data: challenges } = await query;
 
   let clearedChallengeIds = [];
-  if (isBuilderTrack) {
+  if (isTrack) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -48,7 +54,7 @@ export default async function ZonePage({ params }) {
     <ZoneDetailView
       zone={zone}
       challenges={challenges || []}
-      isBuilderTrack={isBuilderTrack}
+      isBuilderTrack={isTrack}
       clearedChallengeIds={clearedChallengeIds}
     />
   );

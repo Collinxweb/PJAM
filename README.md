@@ -145,3 +145,12 @@ The old zone-based Daily Rush entry (`zones.id = 'daily-rush'`) is retired (`act
 - **Shared AI provider code**: extracted the four provider-calling functions into `lib/aiProviders.js` so both the regular challenge submit route and the new Daily Rush route call providers identically, instead of duplicating ~150 lines.
 - **Settings is now a real visible button** (a bordered circle, not a faint emoji) in the Home header, with a small avatar circle next to the username/level.
 - **Log out finally exists** — added to `/settings`, calls `supabase.auth.signOut()` for real and redirects home. This was missing entirely before; there was no way to sign out of the app at all.
+
+## Migration v10 (Integrations Track — 50 more levels)
+Run `supabase-schema-v10-integrations-track.sql` after v9. A second real 50-level track, same structure as Builder Track (sequential, locked, 1–17 Easy / 18–34 Normal / 35–50 Hard) but focused specifically on **API integration skills**: auth flows, webhooks, rate limiting, retries, idempotency, failover, and integration architecture — from "First Handshake" (Level 1) to "Integration Grandmaster" (Level 50). Note: only Builder Track drives the shared player Level stat (unchanged design) — Integrations Track has its own independent 50-level progress, tracked on its own zone page.
+
+## Judging made significantly more lenient
+- **PASS_SCORE dropped from 70 to 40** — clearing a level is now meant to feel achievable, not tough.
+- **Coin rewards are graduated across the wider passing range** so a bare pass (40–54) pays very little while scoring 95+ still pays full — the incentive to do well is in the reward curve, not in a high bar to clear at all.
+- **Judge prompt wording softened across all three difficulty tiers** (not just Easy) — even Hard-tier grading now explicitly credits a good-faith, mostly-correct attempt instead of demanding a near-exact match.
+- **Offline heuristic fallback leniency raised to match**, so scoring is easier even without an AI judge key configured.

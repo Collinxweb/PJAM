@@ -36,7 +36,7 @@ export default function RulesView() {
             <li>Efficiency — 25 pts. Full marks for staying at or under the challenge's par word count; overshooting costs points.</li>
             <li>Style — 15 pts. Creativity and voice, judged independently of correctness.</li>
           </ul>
-          <p className="mt-2">A score of 70 or higher clears the challenge — you'll see 🎉🏆. Below that, you'll see 😞💔 and can retry (outside tournaments).</p>
+          <p className="mt-2">A score of 40 or higher clears the challenge — you'll see 🎉🏆. Below that, you'll see 😞💔 and can retry (outside tournaments). The bar to pass is deliberately low; the coin reward below scales up a lot for scoring well beyond a bare pass.</p>
         </Section>
 
         <Section t={t} title="Difficulty">
@@ -44,11 +44,11 @@ export default function RulesView() {
         </Section>
 
         <Section t={t} title="Coins and XP">
-          Clearing a challenge (score 70+) pays coins based on difficulty (1★=20 up to 5★=100), scaled by how well you scored, plus flat XP. Scoring under 70 pays nothing — no coins, no XP — and prompts a retry.
+          Clearing a challenge (score 40+) pays coins based on difficulty and how well you scored — a bare pass at 40 pays very little, scoring 95+ pays the full amount. Scoring under 40 pays nothing — no coins, no XP — and prompts a retry.
         </Section>
 
         <Section t={t} title="Levels">
-          Your player Level is literally your Builder Track progress — clearing Builder Track Level 12 sets your Level to 12. There are 50 Builder Track levels, so Level is capped at 50. Clearing challenges in other zones earns coins and XP, but doesn't move your Level — only Builder Track does, since it's the main path to actually leveling up. Level is separate from Reputation, which reflects how well you play, not how far you've gotten.
+          Your player Level is literally your Builder Track progress — clearing Builder Track Level 12 sets your Level to 12. There are 50 Builder Track levels, so Level is capped at 50. The Integrations Track (also 50 levels) tracks its own progress separately but doesn't move your player Level — only Builder Track does. Level is separate from Reputation, which reflects how well you play, not how far you've gotten.
         </Section>
 
         <Section t={t} title="Reputation and rank">

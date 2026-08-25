@@ -140,7 +140,7 @@ export default function HomeView({ zones, agents, profile, builderLevel = 0, sho
             </Link>
           </div>
           <p className="text-xs mb-3 opacity-70 font-semibold" style={{ color: t.ink }}>
-            Start with the Builder Track — 50 real levels. Other zones are on the way.
+            Start with the Builder Track or Integrations Track — 100 real levels between them. Other zones are on the way.
           </p>
           <div className="grid grid-cols-2 gap-3">
             {zones.map((z) => (
