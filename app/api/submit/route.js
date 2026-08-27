@@ -8,6 +8,7 @@ import {
   PASS_SCORE,
   isAgentPlayable,
   difficultyTierFor,
+  JUDGE_BEGINNER_CONTEXT,
   JUDGE_STRICTNESS_INSTRUCTIONS,
   HEURISTIC_LENIENCY_MULTIPLIER,
 } from "@/lib/theme";
@@ -23,6 +24,7 @@ async function judgeWithGemini(output, target, tier) {
   if (!key) return null;
   const model = process.env.GOOGLE_JUDGE_MODEL || process.env.GOOGLE_MODEL || "gemini-2.0-flash";
   const judgePrompt = `You are grading how well an AI's output matches a target answer.
+${JUDGE_BEGINNER_CONTEXT}
 ${JUDGE_STRICTNESS_INSTRUCTIONS[tier]}
 
 Target answer:
@@ -72,6 +74,7 @@ async function judgeWithOpenAI(output, target, tier) {
   if (!key) return null;
   const model = process.env.OPENAI_JUDGE_MODEL || "gpt-4o-mini";
   const judgePrompt = `You are grading how well an AI's output matches a target answer.
+${JUDGE_BEGINNER_CONTEXT}
 ${JUDGE_STRICTNESS_INSTRUCTIONS[tier]}
 
 Target answer:

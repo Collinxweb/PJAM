@@ -154,3 +154,14 @@ Run `supabase-schema-v10-integrations-track.sql` after v9. A second real 50-leve
 - **Coin rewards are graduated across the wider passing range** so a bare pass (40–54) pays very little while scoring 95+ still pays full — the incentive to do well is in the reward curve, not in a high bar to clear at all.
 - **Judge prompt wording softened across all three difficulty tiers** (not just Easy) — even Hard-tier grading now explicitly credits a good-faith, mostly-correct attempt instead of demanding a near-exact match.
 - **Offline heuristic fallback leniency raised to match**, so scoring is easier even without an AI judge key configured.
+
+## Judging made beginner-friendly (again)
+PJAM's audience is beginners learning prompt engineering for the first time, not professional prompt engineers — the judge is now explicitly told this on every single grading call.
+- **PASS_SCORE lowered from 40 to 30.**
+- **New `JUDGE_BEGINNER_CONTEXT` preamble** (in `lib/theme.js`) is sent to every AI judge call — both the standard challenge judge and the Daily Rush creativity judge — explicitly stating the player is a beginner and instructing the judge not to apply expert-level standards.
+- **Difficulty-tier instructions rewritten more generously** across Easy/Medium/Hard — even Hard now only scores low for something "meaningfully wrong or barely attempted," not just imperfect.
+- **Daily Rush solve threshold lowered from 60 to 35**, matching the same beginner-friendly philosophy.
+- **Offline heuristic fallback leniency raised again** to stay consistent with the AI-judge path.
+
+## Fixed a real regression: X sign-in
+`components/OnboardingView.js` had reverted to the old, deprecated `provider: "twitter"` string at some point during earlier feature work in this repo's history, silently undoing a fix that had been applied directly on GitHub. It's corrected back to `provider: "x"` in this version. If X sign-in ever throws "Unsupported provider: provider is not enabled" again, check this exact line first.

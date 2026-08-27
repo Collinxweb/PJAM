@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { PROVIDER_CALLERS, fetchWithTimeout } from "@/lib/aiProviders";
-import { isAgentPlayable } from "@/lib/theme";
+import { isAgentPlayable, JUDGE_BEGINNER_CONTEXT } from "@/lib/theme";
 import {
   todayRushDate,
   dayIndexForDate,
@@ -16,10 +16,11 @@ import {
 async function judgeCreativity(brief, output) {
   const key = process.env.GOOGLE_API_KEY;
   const judgePrompt = `You are judging a creative AI-generated response for a daily creativity challenge.
+${JUDGE_BEGINNER_CONTEXT}
 Brief given to the player: """${brief}"""
 The AI's actual output: """${output}"""
 
-Score 0-100 on originality, imagination, and how well the output fulfills the brief. A safe, generic, or boilerplate answer should score low even if technically on-topic. Reply with ONLY a JSON object, no other text: {"score": <number>}`;
+Score 0-100 on originality, imagination, and how well the output fulfills the brief. Be generous — this is a beginner-friendly game, not a professional creativity contest. A safe or simple answer that still genuinely attempts the brief should score reasonably, not near-zero. Reply with ONLY a JSON object, no other text: {"score": <number>}`;
 
   if (key) {
     try {

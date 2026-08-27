@@ -36,7 +36,7 @@ export default function RulesView() {
             <li>Efficiency — 25 pts. Full marks for staying at or under the challenge's par word count; overshooting costs points.</li>
             <li>Style — 15 pts. Creativity and voice, judged independently of correctness.</li>
           </ul>
-          <p className="mt-2">A score of 40 or higher clears the challenge — you'll see 🎉🏆. Below that, you'll see 😞💔 and can retry (outside tournaments). The bar to pass is deliberately low; the coin reward below scales up a lot for scoring well beyond a bare pass.</p>
+          <p className="mt-2">A score of 30 or higher clears the challenge — you'll see 🎉🏆. Below that, you'll see 😞💔 and can retry (outside tournaments). The bar to pass is deliberately low; the coin reward below scales up a lot for scoring well beyond a bare pass.</p>
         </Section>
 
         <Section t={t} title="Difficulty">
@@ -44,7 +44,7 @@ export default function RulesView() {
         </Section>
 
         <Section t={t} title="Coins and XP">
-          Clearing a challenge (score 40+) pays coins based on difficulty and how well you scored — a bare pass at 40 pays very little, scoring 95+ pays the full amount. Scoring under 40 pays nothing — no coins, no XP — and prompts a retry.
+          Clearing a challenge (score 30+) pays coins based on difficulty and how well you scored — a bare pass at 30 pays very little, scoring 95+ pays the full amount. Scoring under 30 pays nothing — no coins, no XP — and prompts a retry.
         </Section>
 
         <Section t={t} title="Levels">
