@@ -13,7 +13,8 @@
     "@supabase/supabase-js": "^2.45.4",
     "next": "^14.2.35",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "@babel/runtime": "^7.29.10"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",
