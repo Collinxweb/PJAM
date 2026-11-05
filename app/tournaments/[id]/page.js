@@ -17,12 +17,7 @@ export default async function TournamentDetailPage({ params }) {
     .select("user_id, profiles(username)")
     .eq("tournament_id", params.id);
 
-  const { data: leaderboard } = await supabase
-    .from("tournament_leaderboard")
-    .select("*")
-    .eq("tournament_id", params.id)
-    .order("best_score", { ascending: false })
-    .order("first_submitted_at", { ascending: true });
+  const { data: leaderboard } = await supabase.rpc("get_tournament_leaderboard", { p_tournament_id: params.id });
 
   const {
     data: { user },

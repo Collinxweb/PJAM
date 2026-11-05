@@ -26,7 +26,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className="font-body">
         <ThemeProvider>
-          <div className="max-w-sm mx-auto pb-20 relative min-h-screen">{children}</div>
+          <div className="w-full max-w-sm md:max-w-6xl mx-auto pb-20 relative min-h-screen">{children}</div>
         </ThemeProvider>
       </body>
     </html>

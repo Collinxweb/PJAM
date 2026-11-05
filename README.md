@@ -190,3 +190,9 @@ Everything else checked (tournament capacity/fairness enforcement, Daily Rush on
 ## v13 — fixes and home redesign
 - Home screen rebuilt to the dark prototype design (hero, stat strip, AI opponent card, "Compete. Improve. Win." banner).
 - `supabase-schema-v13-fix.sql` must be run once. It hides the Ofrenda zone and its challenges (data kept), then loads the AI Frontiers track (50 levels) and the Daily Rush pool (30 prompts). Safe to re-run.
+
+## v14 — security, desktop layout, home theming
+- Leaderboards now read through `security definer` SQL functions (`get_rank_leaderboard`, `get_tournament_leaderboard`, `get_daily_rush_leaderboard`) instead of views, clearing the Supabase advisor errors.
+- Run `supabase-schema-v14-security-step1.sql` first. Run `supabase-schema-v14-security-step2-drop-views.sql` only after this build is live and Rank, Tournament, and Daily Rush load correctly.
+- Layout expands to a full-width grid on desktop and stays a phone column on mobile.
+- Home screen uses the active theme's colours throughout, with a two-column hero on desktop.

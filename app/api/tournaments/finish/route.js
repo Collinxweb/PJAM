@@ -16,13 +16,7 @@ export async function POST(request) {
   if (tournament.host_id !== user.id) return NextResponse.json({ error: "Only the host can end this tournament." }, { status: 403 });
   if (tournament.status === "completed") return NextResponse.json({ error: "Already completed." }, { status: 400 });
 
-  const { data: leaderboard } = await supabase
-    .from("tournament_leaderboard")
-    .select("*")
-    .eq("tournament_id", tournamentId)
-    .order("best_score", { ascending: false })
-    .order("first_submitted_at", { ascending: true })
-    .limit(1);
+  const { data: leaderboard } = await supabase.rpc("get_tournament_leaderboard", { p_tournament_id: tournamentId });
 
   const winnerId = leaderboard?.[0]?.user_id || null;
 

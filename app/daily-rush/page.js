@@ -29,14 +29,11 @@ export default async function DailyRushPage() {
   const { data: agents } = await supabase.from("ai_agents").select("*").eq("active", true);
   const { data: profile } = await supabase.from("profiles").select("selected_agent_id").eq("id", user.id).single();
 
-  const { data: topSolvers } = await supabase
-    .from("daily_rush_leaderboard")
-    .select("*")
-    .eq("rush_date", rushDate)
-    .eq("solved", true)
-    .not("solve_rank", "is", null)
-    .order("solve_rank")
-    .limit(10);
+  const { data: allEntries } = await supabase.rpc("get_daily_rush_leaderboard", { p_date: rushDate });
+  const topSolvers = (allEntries || [])
+    .filter((r) => r.solved && r.solve_rank != null)
+    .sort((a, b) => a.solve_rank - b.solve_rank)
+    .slice(0, 10);
 
   return (
     <DailyRushView

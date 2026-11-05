@@ -18,7 +18,7 @@ export default function BottomNav() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 flex justify-around items-center py-2.5 px-1 max-w-sm mx-auto"
+      className="fixed bottom-0 left-0 right-0 flex justify-around items-center py-2.5 px-1 max-w-sm md:max-w-6xl mx-auto"
       style={{ background: t.card, borderTop: `3px solid ${t.ink}` }}
     >
       {TABS.map(([icon, label, href]) => {

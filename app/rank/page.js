@@ -4,11 +4,7 @@ import RankView from "@/components/RankView";
 export default async function RankPage() {
   const supabase = createClient();
 
-  const { data: leaderboard } = await supabase
-    .from("leaderboard")
-    .select("*")
-    .order("reputation", { ascending: false })
-    .limit(20);
+  const { data: leaderboard } = await supabase.rpc("get_rank_leaderboard", { p_limit: 20 });
 
   const {
     data: { user },
