@@ -186,3 +186,7 @@ Everything else checked (tournament capacity/fairness enforcement, Daily Rush on
 - **Added:** `ai-frontiers` track — 50 levels from "Hello, Model" to "AI Frontiers Grandmaster", covering how AI works and how to build with it (tokens, evals, RAG, agents, tool use, safety). Run `supabase-schema-v11-ai-frontiers.sql` after v10.
 - **Refreshed:** Daily Rush pool — 30 new AI-themed creative prompts replacing the old 30. Run `supabase-schema-v12-daily-rush-refresh.sql` after v11. It deletes and reinserts `day_index` 1–30, so it is safe to re-run.
 - **Track lists:** `ai-frontiers` is added to `TRACK_ZONE_IDS` in both `app/zone/[id]/page.js` and `app/zone/[id]/challenge/[challengeId]/page.js`. Add any future track ID there too.
+
+## v13 — fixes and home redesign
+- Home screen rebuilt to the dark prototype design (hero, stat strip, AI opponent card, "Compete. Improve. Win." banner).
+- `supabase-schema-v13-fix.sql` must be run once. It hides the Ofrenda zone and its challenges (data kept), then loads the AI Frontiers track (50 levels) and the Daily Rush pool (30 prompts). Safe to re-run.
