@@ -179,3 +179,10 @@ PJAM's audience is beginners learning prompt engineering for the first time, not
 Reviewed the core game flows (submission, tournament join/finish, Daily Rush, Builder Track locking) end to end. Found and fixed one real bug: **`app/achievements/page.js` had a hardcoded `>= 70` threshold for what counts as a "clear,"** left over from before `PASS_SCORE` was lowered to 40 and then 30 — meaning Achievements was silently using the old strict bar this whole time, out of sync with actual gameplay. Now correctly imports and uses `PASS_SCORE`.
 
 Everything else checked (tournament capacity/fairness enforcement, Daily Rush one-per-day + first-10 ranking, Builder/Integrations Track sequential locking, level-up detection, coin payout gating) traced correctly against the current logic. This was a code-level review, not live browser testing — still worth manually clicking through a full tournament and a Daily Rush submission on the live site before wider launch.
+
+## Build notes — removed Ofrenda event, added AI Frontiers (v11) and refreshed Daily Rush (v12)
+
+- **Removed:** the Ofrenda / Día de los Muertos seasonal event entirely — its track, level data, decorations, banner, hero overlay, Explore/Home cards, limited achievement, and the atmosphere layer. No seasonal logic remains in the app.
+- **Added:** `ai-frontiers` track — 50 levels from "Hello, Model" to "AI Frontiers Grandmaster", covering how AI works and how to build with it (tokens, evals, RAG, agents, tool use, safety). Run `supabase-schema-v11-ai-frontiers.sql` after v10.
+- **Refreshed:** Daily Rush pool — 30 new AI-themed creative prompts replacing the old 30. Run `supabase-schema-v12-daily-rush-refresh.sql` after v11. It deletes and reinserts `day_index` 1–30, so it is safe to re-run.
+- **Track lists:** `ai-frontiers` is added to `TRACK_ZONE_IDS` in both `app/zone/[id]/page.js` and `app/zone/[id]/challenge/[challengeId]/page.js`. Add any future track ID there too.

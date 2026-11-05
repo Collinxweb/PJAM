@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useTheme } from "@/components/ThemeProvider";
 import BottomNav from "@/components/BottomNav";
-import { isOfrendaActive } from "@/lib/theme";
 
 function badgeList(stats) {
   return [
@@ -16,7 +15,6 @@ function badgeList(stats) {
     { emoji: "🥇", name: "Gold Standing", desc: "Reach 2,500 reputation.", done: stats.reputation >= 2500 },
     { emoji: "👑", name: "Prompt Master", desc: "Reach 5,000 reputation.", done: stats.reputation >= 5000 },
     { emoji: "🪙", name: "Coin Collector", desc: "Earn 1,000 coins total.", done: stats.coins >= 1000 },
-    ...(isOfrendaActive() ? [{ emoji: "🏵️", name: "Ofrenda Complete", desc: "Limited edition · Día de los Muertos", done: false, limited: true }] : []),
   ];
 }
 
@@ -60,7 +58,7 @@ export default function AchievementsView({ signedIn, stats }) {
           {badges.map((b) => (
             <div
               key={b.name}
-              className={`rounded-2xl p-3 flex items-center gap-3 ${b.limited ? "ofrenda-card" : ""}`}
+              className="rounded-2xl p-3 flex items-center gap-3"
               style={{ background: t.card, border: `2.5px solid ${t.ink}`, opacity: b.done ? 1 : b.limited ? 0.9 : 0.5 }}
             >
               <span className="text-2xl">{b.emoji}</span>

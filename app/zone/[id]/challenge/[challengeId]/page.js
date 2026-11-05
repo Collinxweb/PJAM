@@ -6,7 +6,7 @@ import { PASS_SCORE } from "@/lib/theme";
 
 // Kept in sync with app/zone/[id]/page.js — any zone using level_number
 // gets sequential locking + "next level" navigation.
-const TRACK_ZONE_IDS = ["builder-track", "integrations-track"];
+const TRACK_ZONE_IDS = ["builder-track", "integrations-track", "ai-frontiers"];
 
 export default async function ChallengePage({ params }) {
   const supabase = createClient();

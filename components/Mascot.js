@@ -23,7 +23,7 @@ export default function Mascot({ t, pose = "wave", size = 96 }) {
       <circle cx="100" cy="52" r="6" fill={t.mascotBody} stroke={t.ink} strokeWidth="2.5" />
 
       <path
-        d={pose === "wave" || pose === "ofrenda" ? "M92 68q16-4 18 8t-14 12" : "M92 72q14 4 14 14"}
+        d={pose === "wave" ? "M92 68q16-4 18 8t-14 12" : "M92 72q14 4 14 14"}
         stroke={t.ink}
         strokeWidth="3"
         fill="none"
@@ -33,13 +33,6 @@ export default function Mascot({ t, pose = "wave", size = 96 }) {
 
       <rect x="42" y="84" width="10" height="14" rx="4" fill={t.mascotBody} stroke={t.ink} strokeWidth="2.5" />
       <rect x="68" y="84" width="10" height="14" rx="4" fill={t.mascotBody} stroke={t.ink} strokeWidth="2.5" />
-      {pose === "ofrenda" && <g className="mascot-ofrenda-overlay">
-        <path d="M29 31 48 9 45 26 65 12 59 30Z" fill="#25143a" stroke="#ffcf63" strokeWidth="2" strokeLinejoin="round" />
-        <path d="M43 27q17 7 34 0" fill="none" stroke="#ff9500" strokeWidth="3" />
-        {[46, 53, 60, 67, 74].map((x) => <circle key={x} cx={x} cy="29" r="2.2" fill={x % 2 ? "#ffcf63" : "#e95d9d"} />)}
-        <path d="M104 77q15-10 12-24" fill="none" stroke="#ff9500" strokeWidth="3" strokeLinecap="round" />
-        <path d="m115 52 1-9 4 7m-5 2-8-4 7-3" fill="none" stroke="#ffcf63" strokeWidth="2" strokeLinecap="round" />
-      </g>}
     </svg>
   );
 }

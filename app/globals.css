@@ -7,25 +7,3 @@
 body {
   font-family: 'Nunito', sans-serif;
 }
-
-
-.ofrenda-banner { border: 2px solid rgba(255,149,0,.72); background: linear-gradient(110deg,rgba(255,149,0,.13),rgba(162,89,255,.09) 68%,rgba(224,69,133,.1)); box-shadow: 0 0 22px rgba(255,149,0,.13); }
-.ofrenda-home { min-height: 100vh; position: relative; isolation: isolate; background: radial-gradient(ellipse at 50% 10%,#352050 0%,#211438 38%,#171024 78%); }
-.ofrenda-home > *:not(.ofrenda-scene) { position: relative; z-index: 1; }
-.ofrenda-scene { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
-.papel-picado { position: absolute; top: 68px; left: 0; width: 100%; height: 58px; transform-origin: top center; animation: papel-sway 7s ease-in-out infinite alternate; }
-@keyframes papel-sway { from { transform: rotate(-.4deg); } to { transform: rotate(.4deg); } }
-.ofrenda-orb { position: absolute; width: 170px; height: 170px; border-radius: 50%; filter: blur(45px); background: rgba(255,149,0,.12); }
-.orb-one { top: 210px; left: -95px; }.orb-two { top: 500px; right: -110px; background: rgba(236,94,150,.1); }
-.ofrenda-side-decor { position: absolute; display: flex; align-items: center; opacity: .52; filter: drop-shadow(0 0 12px rgba(255,149,0,.4)); }
-.ofrenda-side-decor span { font-size: 30px; }.decor-left { top: 280px; left: -22px; }.decor-right { top: 490px; right: -26px; }
-.ofrenda-cluster-svg { width: 58px; height: 48px; }
-.hero-mascot { position: relative; filter: drop-shadow(0 0 14px rgba(255,149,0,.3)); }
-.hero-mascot:before { content:"🧙"; position:absolute; z-index:2; top:-13px; left:calc(50% - 14px); font-size:25px; transform:rotate(-8deg); }
-.hero-mascot:after { content:"🌼🌼"; position:absolute; z-index:2; bottom:7px; left:calc(50% - 25px); font-size:12px; letter-spacing:1px; }
-.ofrenda-feature-card,.ofrenda-explore-card { border:1.5px solid rgba(255,149,0,.75); background:linear-gradient(125deg,#291640,#201533 65%,#311b38); box-shadow:0 0 22px rgba(255,149,0,.19),inset 0 0 18px rgba(255,149,0,.035); }
-.ofrenda-art { width:58px; height:52px; display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:1px; border-radius:16px; background:radial-gradient(circle,rgba(255,149,0,.25),transparent 72%); font-size:22px; }
-.ofrenda-skull-pill,.ofrenda-end-pill { display:inline-flex; align-items:center; border-radius:999px; padding:4px 7px; font-size:9px; line-height:1; font-weight:900; white-space:nowrap; }
-.ofrenda-skull-pill { color:#ffe9c0; background:#49264f; border:1px solid rgba(255,149,0,.55); }.ofrenda-end-pill { color:#381927; background:#ffac32; }
-.ofrenda-mini-card { min-width:0; min-height:92px; padding:10px 7px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; text-align:center; border-radius:18px; border:1px solid rgba(255,149,0,.35); background:linear-gradient(145deg,rgba(53,34,76,.96),rgba(36,24,49,.96)); }
-@media (prefers-reduced-motion: reduce) { .papel-picado,.ofrenda-atmosphere span { animation:none !important; } }

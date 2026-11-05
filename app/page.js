@@ -2,13 +2,10 @@ import { createClient } from "@/lib/supabase/server";
 import HomeView from "@/components/HomeView";
 import { getBuilderLevel } from "@/lib/progress";
 import { todayRushDate, dayIndexForDate } from "@/lib/dailyRush";
-import { isOfrendaActive } from "@/lib/theme";
-import { OFRENDA_ZONE } from "@/lib/ofrendaTrack";
 
 export default async function HomePage() {
   const supabase = createClient();
-  const { data: fetchedZones } = await supabase.from("zones").select("*").eq("active", true).order("sort_order").limit(4);
-  const zones = isOfrendaActive() && !(fetchedZones || []).some((zone) => zone.id === "ofrenda-track") ? [OFRENDA_ZONE, ...(fetchedZones || []).slice(0,3)] : fetchedZones || [];
+  const { data: zones } = await supabase.from("zones").select("*").eq("active", true).order("sort_order").limit(4);
   const { data: agents } = await supabase.from("ai_agents").select("*").eq("active", true);
   const { data: { user } } = await supabase.auth.getUser();
   let profile = null, builderLevel = 0, dailyRushBrief = null, showDailyRushPopup = false;
@@ -20,5 +17,5 @@ export default async function HomePage() {
       if (challenge) { dailyRushBrief = challenge.brief; showDailyRushPopup = true; await supabase.from("profiles").update({ last_daily_rush_seen_date: rushDate }).eq("id", user.id); }
     }
   }
-  return <HomeView zones={zones} agents={agents || []} profile={profile} builderLevel={builderLevel} showDailyRushPopup={showDailyRushPopup} dailyRushBrief={dailyRushBrief} />;
+  return <HomeView zones={zones || []} agents={agents || []} profile={profile} builderLevel={builderLevel} showDailyRushPopup={showDailyRushPopup} dailyRushBrief={dailyRushBrief} />;
 }

@@ -7,7 +7,7 @@ import { PASS_SCORE } from "@/lib/theme";
 // "track" — locked levels, level names, progress count — rather than a
 // flat difficulty-filtered list. This covers Builder Track, Integrations
 // Track, and any future track without hardcoding each zone's ID here.
-const TRACK_ZONE_IDS = ["builder-track", "integrations-track"];
+const TRACK_ZONE_IDS = ["builder-track", "integrations-track", "ai-frontiers"];
 
 export default async function ZonePage({ params }) {
   const supabase = createClient();

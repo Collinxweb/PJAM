@@ -59,7 +59,7 @@ export default function GetStartedView() {
           Choose which AI you're prompting — Claude, ChatGPT, Grok, or Gemini. Each one "thinks" a little differently, so a prompt that works perfectly on one might flop on another. Part of the game is learning those differences.
         </Step>
         <Step t={t} num="2" title="Enter a zone, pick a difficulty.">
-          Two tracks carry the real game right now: **Builder Track** (50 levels, general dev skills — specs, debugging, architecture) and **Integrations Track** (50 levels, specifically API integration — auth, webhooks, rate limits, failure handling). The other zones (Foundations, Pattern, Precision, Voice, Logic) are on the way, shown dimmed until their own levels are built. Daily Rush is separate — a real, live daily challenge, not a dimmed zone.
+          Three tracks carry the real game right now: **Builder Track** (50 levels, general dev skills — specs, debugging, architecture), **Integrations Track** (50 levels, API integration — auth, webhooks, rate limits, failure handling), and **AI Frontiers** (50 levels, how AI works and how to build with it — evals, agents, retrieval, tool use, safety). The other zones (Foundations, Pattern, Precision, Voice, Logic) are on the way, shown dimmed until their own levels are built. Daily Rush is separate — a real, live daily challenge, not a dimmed zone.
         </Step>
         <Step t={t} num="3" title="Read the challenge carefully.">
           Every challenge tells you exactly what output you're trying to get the AI to produce — a specific answer, format, or style. Your job is to write the prompt that gets the AI there, not to answer it yourself.

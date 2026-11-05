@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import * as Sentry from "@sentry/nextjs";
 import { createClient } from "@/lib/supabase/server";
-import { ofrendaChallengeUuid } from "@/lib/dbIds";
 import { getBuilderLevel } from "@/lib/progress";
 import { fetchWithTimeout, PROVIDER_CALLERS } from "@/lib/aiProviders";
 import {
@@ -158,14 +157,10 @@ async function submitChallenge(request, traceSpan) {
     return NextResponse.json({ error: "Missing challengeId, agentId, or promptText." }, { status: 400 });
   }
 
-  const challengeLookupId =
-    typeof challengeId === "string" && challengeId.startsWith("ofrenda-")
-      ? ofrendaChallengeUuid(challengeId)
-      : challengeId;
   const { data: challenge, error: challengeErr } = await supabase
     .from("challenges")
     .select("*")
-    .eq("id", challengeLookupId)
+    .eq("id", challengeId)
     .single();
   if (challengeErr || !challenge) {
     return NextResponse.json({ error: "Challenge not found." }, { status: 404 });
@@ -241,7 +236,7 @@ async function submitChallenge(request, traceSpan) {
 
   const { error: insertErr } = await supabase.from("submissions").insert({
     user_id: user.id,
-    challenge_id: challengeLookupId,
+    challenge_id: challengeId,
     ai_agent_id: agentId,
     prompt_text: promptText,
     output_text: outputText,
